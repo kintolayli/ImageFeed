@@ -72,11 +72,11 @@
 		8A6938A32BEA984B009134B0 /* ImageFeed */ = {
 			isa = PBXGroup;
 			children = (
-				8A4490DB2BFD47F400C695A6 /* SingleImageView */,
-				8A9A52952BFD2D0B009B5DE4 /* ProfileView */,
-				8A6CB5B02BECD113005F9E4C /* ImagesList */,
 				8A6938A42BEA984B009134B0 /* AppDelegate.swift */,
 				8A6938A62BEA984B009134B0 /* SceneDelegate.swift */,
+				8A9A52952BFD2D0B009B5DE4 /* ProfileView */,
+				8A6CB5B02BECD113005F9E4C /* ImagesList */,
+				8A4490DB2BFD47F400C695A6 /* SingleImageView */,
 				8A6938AA2BEA984B009134B0 /* Main.storyboard */,
 				8A6938AD2BEA984B009134B0 /* Assets.xcassets */,
 				8A6938AF2BEA984B009134B0 /* LaunchScreen.storyboard */,
