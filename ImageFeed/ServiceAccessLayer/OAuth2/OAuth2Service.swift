@@ -7,9 +7,18 @@
 
 import UIKit
 
+enum AuthServiceError: Error {
+    case invalidRequest
+}
+
 final class OAuth2Service {
     static let shared = OAuth2Service()
-    let storage = OAuth2TokenStorage()
+    let tokenStorage = OAuth2TokenStorage()
+    
+    private let urlSession = URLSession.shared
+    
+    private var task: URLSessionTask?
+    private var lastCode: String?
     
     private init () {}
     
@@ -35,17 +44,28 @@ final class OAuth2Service {
 
     
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void ) {
-        guard let request = makeOAuthTokenRequest(code: code) else {
-            fatalError("Invalid request")
+        assert(Thread.isMainThread)
+        
+        guard lastCode != code else {
+            completion(.failure(AuthServiceError.invalidRequest))
+            return
         }
         
-        URLSession.shared.data(for: request) { result in
+        task?.cancel()
+        lastCode = code
+        
+        guard let request = makeOAuthTokenRequest(code: code) else {
+            completion(.failure(AuthServiceError.invalidRequest))
+            return
+        }
+        
+        let task = urlSession.data(for: request) { [weak self] result in
             switch result {
             case .success(let data):
                 do {
                     let decoder = JSONDecoder()
                     let response = try decoder.decode(OAuthTokenResponseBody.self, from: data)
-                    self.storage.token = response.accessToken
+                    self?.tokenStorage.token = response.accessToken
                     
                     completion(.success(response.accessToken))
                 } catch {
@@ -56,6 +76,11 @@ final class OAuth2Service {
                 print("Error fetching OAuth token: \(error)")
                 completion(.failure(error))
             }
-        }.resume()
+            
+            self?.task = nil
+            self?.lastCode = nil
+        }
+        self.task = task
+        task.resume()
     }
 }

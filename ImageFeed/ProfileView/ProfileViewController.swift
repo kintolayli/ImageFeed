@@ -9,6 +9,8 @@ import UIKit
 
 class ProfileViewController: UIViewController {
     
+    private let profileService = ProfileService.shared
+    
     // MARK: - UI Components
     private let profileImage: UIImageView = {
         let profileImage = UIImageView()
@@ -20,7 +22,8 @@ class ProfileViewController: UIViewController {
     
     private let realNameLabel: UILabel = {
         let realNameLabel = UILabel()
-        realNameLabel.text = "Екатерина Новикова"
+//        realNameLabel.text = "Екатерина Новикова"
+        realNameLabel.text = ""
         realNameLabel.textColor = .ypWhite
         realNameLabel.font = UIFont.systemFont(ofSize: 23)
         return realNameLabel
@@ -28,7 +31,8 @@ class ProfileViewController: UIViewController {
     
     private let usernameLabel: UILabel = {
         let usernameLabel = UILabel()
-        usernameLabel.text = "@ekaterina_nov"
+//        usernameLabel.text = "@ekaterina_nov"
+        usernameLabel.text = ""
         usernameLabel.textColor = .ypGray
         usernameLabel.font = UIFont.systemFont(ofSize: 13)
         return usernameLabel
@@ -36,7 +40,8 @@ class ProfileViewController: UIViewController {
     
     private let textLabel: UILabel = {
         let textLabel = UILabel()
-        textLabel.text = "Hello, world!"
+//        textLabel.text = "Hello, world!"
+        textLabel.text = ""
         textLabel.textColor = .ypWhite
         textLabel.font = UIFont.systemFont(ofSize: 13)
         return textLabel
@@ -57,8 +62,20 @@ class ProfileViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        updateProfileDetails(profile: profileService.profile)
+        
         logoutButton.addTarget(self, action: #selector(logoutButtonDidTap), for: .touchUpInside)
         setupUI()
+    }
+    
+    private func updateProfileDetails(profile: Profile?) {
+        guard let profile = profile else {
+            return
+        }
+        self.realNameLabel.text = profile.name
+        self.usernameLabel.text = profile.loginName
+        self.textLabel.text = profile.bio
+//        self.textLabel.text = ProfileImageService.shared.avatarURL
     }
     
     private func setupUI() {
@@ -96,8 +113,7 @@ class ProfileViewController: UIViewController {
         ])
     }
     
-    @objc
-    private func logoutButtonDidTap(_ sender: Any) {
+    @objc private func logoutButtonDidTap(_ sender: Any) {
         print("logout")
     }
 }
