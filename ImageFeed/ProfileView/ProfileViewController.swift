@@ -10,6 +10,7 @@ import UIKit
 class ProfileViewController: UIViewController {
     
     private let profileService = ProfileService.shared
+    private var profileImageServiceObserver: NSObjectProtocol?
     
     // MARK: - UI Components
     private let profileImage: UIImageView = {
@@ -22,7 +23,6 @@ class ProfileViewController: UIViewController {
     
     private let realNameLabel: UILabel = {
         let realNameLabel = UILabel()
-//        realNameLabel.text = "Екатерина Новикова"
         realNameLabel.text = ""
         realNameLabel.textColor = .ypWhite
         realNameLabel.font = UIFont.systemFont(ofSize: 23)
@@ -31,7 +31,6 @@ class ProfileViewController: UIViewController {
     
     private let usernameLabel: UILabel = {
         let usernameLabel = UILabel()
-//        usernameLabel.text = "@ekaterina_nov"
         usernameLabel.text = ""
         usernameLabel.textColor = .ypGray
         usernameLabel.font = UIFont.systemFont(ofSize: 13)
@@ -40,7 +39,6 @@ class ProfileViewController: UIViewController {
     
     private let textLabel: UILabel = {
         let textLabel = UILabel()
-//        textLabel.text = "Hello, world!"
         textLabel.text = ""
         textLabel.textColor = .ypWhite
         textLabel.font = UIFont.systemFont(ofSize: 13)
@@ -64,8 +62,24 @@ class ProfileViewController: UIViewController {
         
         updateProfileDetails(profile: profileService.profile)
         
+        profileImageServiceObserver = NotificationCenter.default.addObserver(
+            forName: ProfileImageService.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.updateProfileImage()
+        }
+        updateProfileImage()
+        
         logoutButton.addTarget(self, action: #selector(logoutButtonDidTap), for: .touchUpInside)
         setupUI()
+    }
+    
+    private func updateProfileImage() {
+        guard let profileImageURL = ProfileImageService.shared.profileImageURL,
+              let url = URL(string: profileImageURL)
+        else { return }
     }
     
     private func updateProfileDetails(profile: Profile?) {
@@ -75,7 +89,6 @@ class ProfileViewController: UIViewController {
         self.realNameLabel.text = profile.name
         self.usernameLabel.text = profile.loginName
         self.textLabel.text = profile.bio
-//        self.textLabel.text = ProfileImageService.shared.avatarURL
     }
     
     private func setupUI() {
