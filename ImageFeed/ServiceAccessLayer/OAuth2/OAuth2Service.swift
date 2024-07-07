@@ -59,27 +59,42 @@ final class OAuth2Service {
             return
         }
         
-        let task = urlSession.data(for: request) { [weak self] result in
+//        let task = urlSession.data(for: request) { [weak self] result in
+//            switch result {
+//            case .success(let data):
+//                do {
+//                    let decoder = JSONDecoder()
+//                    let response = try decoder.decode(OAuthTokenResponseBody.self, from: data)
+//                    self?.tokenStorage.token = response.accessToken
+//                    
+//                    completion(.success(response.accessToken))
+//                } catch {
+//                    print("Error decoding OAuth token response: \(error)")
+//                    completion(.failure(error))
+//                }
+//            case .failure(let error):
+//                print("Error fetching OAuth token: \(error)")
+//                completion(.failure(error))
+//            }
+//            
+//            self?.task = nil
+//            self?.lastCode = nil
+//        }
+        
+        let task = urlSession.objectTask(for: request) { [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
             switch result {
-            case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let response = try decoder.decode(OAuthTokenResponseBody.self, from: data)
-                    self?.tokenStorage.token = response.accessToken
-                    
-                    completion(.success(response.accessToken))
-                } catch {
-                    print("Error decoding OAuth token response: \(error)")
-                    completion(.failure(error))
-                }
+            case .success(let response):
+                self?.tokenStorage.token = response.accessToken
+                completion(.success(response.accessToken))
             case .failure(let error):
-                print("Error fetching OAuth token: \(error)")
+                print("Ошибка получения OAuth токена: \(error.localizedDescription)")
                 completion(.failure(error))
             }
             
             self?.task = nil
             self?.lastCode = nil
         }
+        
         self.task = task
         task.resume()
     }

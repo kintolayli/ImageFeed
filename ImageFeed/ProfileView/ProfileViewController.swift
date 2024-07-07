@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 class ProfileViewController: UIViewController {
     
@@ -80,6 +81,20 @@ class ProfileViewController: UIViewController {
         guard let profileImageURL = ProfileImageService.shared.profileImageURL,
               let url = URL(string: profileImageURL)
         else { return }
+        print(url)
+        let processor = RoundCornerImageProcessor(cornerRadius: 20)
+        profileImage.kf.indicatorType = .activity
+        profileImage.kf.setImage(with: url,
+                                 placeholder: UIImage(named: "userpick_stub"),
+                                 options: [.processor(processor)]) { result in
+            switch result {
+            case .success(let value):
+                print(value.image)
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+        
     }
     
     private func updateProfileDetails(profile: Profile?) {
@@ -92,6 +107,8 @@ class ProfileViewController: UIViewController {
     }
     
     private func setupUI() {
+        view.backgroundColor = .ypBlack
+        
         profileImage.translatesAutoresizingMaskIntoConstraints = false
         realNameLabel.translatesAutoresizingMaskIntoConstraints = false
         usernameLabel.translatesAutoresizingMaskIntoConstraints = false

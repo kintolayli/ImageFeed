@@ -150,6 +150,11 @@ extension SplashViewController: AuthViewControllerDelegate {
                 self.switchToTabBarController()
             case .failure:
                 print("Failed to fetch OAuth token")
+                
+                let alert = UIAlertController(title: "Что-то пошло не так(", message: "Не удалось войти в систему", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "ОK", style: .default))
+                self.present(alert, animated: true, completion: nil)
+                
                 break
             }
         }

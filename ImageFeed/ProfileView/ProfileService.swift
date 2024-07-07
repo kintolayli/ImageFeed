@@ -16,6 +16,13 @@ struct ProfileResult: Codable {
     let firstName: String
     let lastName: String
     let bio: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case username
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case bio
+    }
 }
 
 struct Profile {
@@ -70,29 +77,44 @@ final class ProfileService {
             return
         }
         
-        let task = urlSession.data(for: request) { [weak self] result in
+//        let task = urlSession.data(for: request) { [weak self] result in
+//            switch result {
+//            case .success(let data):
+//                do {
+//                    let decoder = JSONDecoder()
+//                    decoder.keyDecodingStrategy = .convertFromSnakeCase
+//                    let response = try decoder.decode(ProfileResult.self, from: data)
+//                    
+//                    let profile = Profile(username: response.username, firstName: response.firstName, lastName: response.lastName, bio: response.bio)
+//                    self?.profile = profile
+//
+//                    ProfileImageService.shared.fetchProfileImageURL(username: response.username) { _ in }
+//                    completion(.success(profile))
+//                } catch {
+//                    print("Error decoding profile response: \(error)")
+//                    completion(.failure(error))
+//                }
+//            case .failure(let error):
+//                print("Error fetching profile: \(error)")
+//                completion(.failure(error))
+//            }
+//            
+//            self?.task = nil
+//        }
+        
+        let task = urlSession.objectTask(for: request) { (result: Result<ProfileResult, Error>) in
             switch result {
-            case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    decoder.keyDecodingStrategy = .convertFromSnakeCase
-                    let response = try decoder.decode(ProfileResult.self, from: data)
-                    
-                    let profile = Profile(username: response.username, firstName: response.firstName, lastName: response.lastName, bio: response.bio)
-                    self?.profile = profile
-
-                    ProfileImageService.shared.fetchProfileImageURL(username: response.username) { _ in }
-                    completion(.success(profile))
-                } catch {
-                    print("Error decoding profile response: \(error)")
-                    completion(.failure(error))
-                }
+            case .success(let response):
+                let profile = Profile(username: response.username, firstName: response.firstName, lastName: response.lastName, bio: response.bio)
+                self.profile = profile
+                ProfileImageService.shared.fetchProfileImageURL(username: response.username) { _ in }
+                completion(.success(profile))
             case .failure(let error):
-                print("Error fetching profile: \(error)")
+                print("Ошибка получения данных профиля: \(error.localizedDescription)")
                 completion(.failure(error))
             }
             
-            self?.task = nil
+            self.task = nil
         }
         
         self.task = task

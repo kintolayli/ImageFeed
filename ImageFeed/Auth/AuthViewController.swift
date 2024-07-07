@@ -67,8 +67,7 @@ class AuthViewController: UIViewController {
         ])
     }
     
-    @objc
-    private func didTapLogoutButton() {
+    @objc private func didTapLogoutButton() {
         performSegue(withIdentifier: ShowWebViewSegueIdentifier, sender: nil)
     }
     

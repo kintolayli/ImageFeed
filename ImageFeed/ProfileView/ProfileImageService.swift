@@ -23,6 +23,7 @@ struct UserResult: Codable {
 // MARK: - ProfileImage
 struct ProfileImage: Codable {
     let small: String
+    let large: String
 }
 
 func makeProfileImageRequest(username: String) -> URLRequest? {
@@ -61,30 +62,45 @@ final class ProfileImageService {
             return
         }
         
-        let task = urlSession.data(for: request) { [weak self] result in
+//        let task = urlSession.data(for: request) { [weak self] result in
+//            switch result {
+//            case .success(let data):
+//                do {
+//                    let decoder = JSONDecoder()
+//                    let response = try decoder.decode(UserResult.self, from: data)
+//                    
+//                    let profileImageURL = response.profileImage.small
+//                    self?.profileImageURL = profileImageURL
+//                    
+//                    completion(.success(self?.profileImageURL ?? ""))
+//                    NotificationCenter.default.post(name: ProfileImageService.didChangeNotification,
+//                                                    object: self,
+//                                                    userInfo: ["URL": profileImageURL])
+//                } catch {
+//                    print("Error decoding profileImageURL response: \(error)")
+//                    completion(.failure(error))
+//                }
+//            case .failure(let error):
+//                print("Error fetching profileImageURL: \(error)")
+//                completion(.failure(error))
+//            }
+//            
+//            self?.task = nil
+//        }
+        
+        let task = urlSession.objectTask(for: request) { (result: Result<UserResult, Error>) in
             switch result {
-            case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let response = try decoder.decode(UserResult.self, from: data)
-                    
-                    let profileImageURL = response.profileImage.small
-                    self?.profileImageURL = profileImageURL
-                    
-                    completion(.success(self?.profileImageURL ?? ""))
+            case .success(let response):
+                    let profileImage = response.profileImage.large
+                    self.profileImageURL = profileImage
+                    completion(.success(profileImage))
                     NotificationCenter.default.post(name: ProfileImageService.didChangeNotification,
                                                     object: self,
-                                                    userInfo: ["URL": profileImageURL])
-                } catch {
-                    print("Error decoding profileImageURL response: \(error)")
-                    completion(.failure(error))
-                }
+                                                    userInfo: ["URL": profileImage])
             case .failure(let error):
-                print("Error fetching profileImageURL: \(error)")
+                print("Ошибка получения URL изображения профиля: \(error.localizedDescription)")
                 completion(.failure(error))
             }
-            
-            self?.task = nil
         }
         
         self.task = task
