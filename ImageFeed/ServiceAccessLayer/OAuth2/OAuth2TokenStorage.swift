@@ -8,16 +8,6 @@
 import UIKit
 import SwiftKeychainWrapper
 
-//final class OAuth2TokenStorage {
-//    var token: String? {
-//        get {
-//            return UserDefaults.standard.string(forKey: "bearerToken")
-//        }
-//        set {
-//            UserDefaults.standard.set(newValue, forKey: "bearerToken")
-//        }
-//    }
-//}
 
 final class OAuth2TokenStorage {
     var token: String? {
@@ -29,6 +19,13 @@ final class OAuth2TokenStorage {
             guard isSuccess else {
                 fatalError("Ошибка сохранения токена")
             }
+        }
+    }
+    
+    static func deleteToken() {
+        let removeSuccessful: Bool = KeychainWrapper.standard.removeObject(forKey: "bearerToken")
+        guard removeSuccessful else {
+            fatalError("Ошибка удаления токена")
         }
     }
 }

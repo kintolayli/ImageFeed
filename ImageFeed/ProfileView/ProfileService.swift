@@ -77,31 +77,6 @@ final class ProfileService {
             return
         }
         
-//        let task = urlSession.data(for: request) { [weak self] result in
-//            switch result {
-//            case .success(let data):
-//                do {
-//                    let decoder = JSONDecoder()
-//                    decoder.keyDecodingStrategy = .convertFromSnakeCase
-//                    let response = try decoder.decode(ProfileResult.self, from: data)
-//                    
-//                    let profile = Profile(username: response.username, firstName: response.firstName, lastName: response.lastName, bio: response.bio)
-//                    self?.profile = profile
-//
-//                    ProfileImageService.shared.fetchProfileImageURL(username: response.username) { _ in }
-//                    completion(.success(profile))
-//                } catch {
-//                    print("Error decoding profile response: \(error)")
-//                    completion(.failure(error))
-//                }
-//            case .failure(let error):
-//                print("Error fetching profile: \(error)")
-//                completion(.failure(error))
-//            }
-//            
-//            self?.task = nil
-//        }
-        
         let task = urlSession.objectTask(for: request) { (result: Result<ProfileResult, Error>) in
             switch result {
             case .success(let response):

@@ -144,6 +144,10 @@ class ProfileViewController: UIViewController {
     }
     
     @objc private func logoutButtonDidTap(_ sender: Any) {
+        OAuth2TokenStorage.deleteToken()
         print("logout")
+        let viewController = SplashViewController()
+        viewController.modalPresentationStyle = .fullScreen
+        present(viewController, animated: true, completion: nil)
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23077.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="kvs-mw-I2h">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23077.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
@@ -198,7 +198,7 @@
         <!--Auth View Controller-->
         <scene sceneID="cfF-BJ-gWi">
             <objects>
-                <viewController id="c37-VE-dRa" customClass="AuthViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="AuthViewController" id="c37-VE-dRa" customClass="AuthViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="41U-BS-zZ5">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -230,25 +230,6 @@
             </objects>
             <point key="canvasLocation" x="1001" y="-1180"/>
         </scene>
-        <!--Splash View Controller-->
-        <scene sceneID="yHm-wB-VDc">
-            <objects>
-                <viewController id="kvs-mw-I2h" customClass="SplashViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="JW9-OD-4Z8">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <viewLayoutGuide key="safeArea" id="9GU-Xk-7dV"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                    </view>
-                    <connections>
-                        <segue destination="TmU-fC-V06" kind="presentation" identifier="AuthenticationScreenSegue" modalPresentationStyle="overFullScreen" id="PpQ-6R-Dam"/>
-                        <segue destination="sFp-l6-QU4" kind="show" identifier="ImagesListScreenSegue" id="eic-TE-1B2"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="GxP-w6-D0O" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-2189" y="-733"/>
-        </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="3W9-MY-VI6">
             <objects>
@@ -275,7 +256,7 @@
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="FBg-Lw-H1n"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="TbO-RW-lGa">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="44"/>
+                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <nil name="viewControllers"/>

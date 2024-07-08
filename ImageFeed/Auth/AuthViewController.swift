@@ -68,20 +68,10 @@ class AuthViewController: UIViewController {
     }
     
     @objc private func didTapLogoutButton() {
-        performSegue(withIdentifier: ShowWebViewSegueIdentifier, sender: nil)
-    }
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == ShowWebViewSegueIdentifier {
-            guard
-                let webViewViewController = segue.destination as? WebViewViewController
-            else {
-                fatalError("Failed to prepare for \(ShowWebViewSegueIdentifier)")
-            }
-            webViewViewController.delegate = self
-        } else {
-            super.prepare(for: segue, sender: sender)
-        }
+        let viewController = WebViewViewController()
+        viewController.delegate = self
+        viewController.modalPresentationStyle = .fullScreen
+        present(viewController, animated: true, completion: nil)
     }
     
     private func configureBackButton() {

@@ -20,9 +20,6 @@ class SplashViewController: UIViewController {
     private let oauth2Service = OAuth2Service.shared
     private let tokenStorage = OAuth2TokenStorage()
     
-    private let authenticationScreenSegueIdentifier = "AuthenticationScreenSegue"
-    private let imagesListScreenSegue = "ImagesListScreenSegue"
-    
     var delegate: AuthViewControllerDelegate?
     
     override func viewDidAppear(_ animated: Bool) {
@@ -30,15 +27,16 @@ class SplashViewController: UIViewController {
         
         if let token = tokenStorage.token {
             fetchProfile(token: token)
-            switchToTabBarController()
         } else {
-            performSegue(withIdentifier: authenticationScreenSegueIdentifier, sender: nil)
+            let viewController = AuthViewController()
+            viewController.delegate = self
+            viewController.modalPresentationStyle = .fullScreen
+            present(viewController, animated: true, completion: nil)
         }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
         setNeedsStatusBarAppearanceUpdate()
     }
     
@@ -76,23 +74,6 @@ class SplashViewController: UIViewController {
     }
 }
 
-extension SplashViewController {
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == authenticationScreenSegueIdentifier {
-            guard
-                let navigationController = segue.destination as? UINavigationController,
-                let viewController = navigationController.viewControllers[0] as? AuthViewController
-            else {
-                fatalError("Failed to prepare for \(authenticationScreenSegueIdentifier)")
-            }
-            viewController.delegate = self
-        } else {
-            super.prepare(for: segue, sender: sender)
-        }
-    }
-}
-
 extension SplashViewController: AuthViewControllerDelegate {
     func didAuntenticate(_ vc: AuthViewController) {
         vc.dismiss(animated: true)
@@ -113,15 +94,10 @@ extension SplashViewController: AuthViewControllerDelegate {
         profileService.fetchProfile(token) { [weak self] result in
             UIBlockingProgressHUD.dismiss()
             
-            guard let self = self else {
-                // TODO: - Если вместо return вставить fatalError("Failed to fetch OAuth token"), то приложение падает в этом месте. Почему?
-//                fatalError("Failed to fetch OAuth token")
-                return
-            }
+            guard let self = self else { return }
 
             switch result {
             case .success(_):
-                performSegue(withIdentifier: imagesListScreenSegue, sender: nil)
                 switchToTabBarController()
             case .failure(_):
                 fatalError("Error getting profile data")
@@ -146,8 +122,6 @@ extension SplashViewController: AuthViewControllerDelegate {
                     fatalError("Failed to get OAuth token")
                 }
                 fetchProfile(token: token)
-                
-                self.switchToTabBarController()
             case .failure:
                 print("Failed to fetch OAuth token")
                 
@@ -158,5 +132,6 @@ extension SplashViewController: AuthViewControllerDelegate {
                 break
             }
         }
+        
     }
 }
