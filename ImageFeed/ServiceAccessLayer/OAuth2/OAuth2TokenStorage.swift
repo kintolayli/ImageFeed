@@ -15,17 +15,13 @@ final class OAuth2TokenStorage {
             KeychainWrapper.standard.string(forKey: "bearerToken")
         }
         set {
-            let isSuccess = KeychainWrapper.standard.set(newValue!, forKey: "bearerToken")
-            guard isSuccess else {
-                fatalError("Ошибка сохранения токена")
+            if let newValue = newValue {
+                KeychainWrapper.standard.set(newValue, forKey: "bearerToken")
             }
         }
     }
     
     static func deleteToken() {
-        let removeSuccessful: Bool = KeychainWrapper.standard.removeObject(forKey: "bearerToken")
-        guard removeSuccessful else {
-            fatalError("Ошибка удаления токена")
-        }
+        KeychainWrapper.standard.removeObject(forKey: "bearerToken")
     }
 }

@@ -84,8 +84,10 @@ extension SingleImageViewController: UIScrollViewDelegate {
     }
     
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
-        let offsetX = max((scrollView.bounds.size.width - view!.frame.size.width) / 2, 0)
-        let offsetY = max((scrollView.bounds.size.height - view!.frame.size.height) / 2, 0)
+        guard let view = view else { return }
+        
+        let offsetX = max((scrollView.bounds.size.width - view.frame.size.width) / 2, 0)
+        let offsetY = max((scrollView.bounds.size.height - view.frame.size.height) / 2, 0)
         
         UIView.animate(withDuration: 0.3) {
             scrollView.contentInset = UIEdgeInsets(top: offsetY, left: offsetX, bottom: offsetY, right: offsetX)

@@ -7,6 +7,7 @@
 
 import UIKit
 import Kingfisher
+import WebKit
 
 class ProfileViewController: UIViewController {
     
@@ -81,7 +82,7 @@ class ProfileViewController: UIViewController {
         guard let profileImageURL = ProfileImageService.shared.profileImageURL,
               let url = URL(string: profileImageURL)
         else { return }
-        print(url)
+
         let processor = RoundCornerImageProcessor(cornerRadius: 20)
         profileImage.kf.indicatorType = .activity
         profileImage.kf.setImage(with: url,
@@ -143,9 +144,30 @@ class ProfileViewController: UIViewController {
         ])
     }
     
+    func clearCookies() {
+        let cookieStorage = HTTPCookieStorage.shared
+        if let cookies = cookieStorage.cookies {
+            for cookie in cookies {
+                cookieStorage.deleteCookie(cookie)
+            }
+        }
+    }
+    
+    func clearWebsiteData() {
+        let dataStore = WKWebsiteDataStore.default()
+        let dataTypes = WKWebsiteDataStore.allWebsiteDataTypes()
+        let date = Date(timeIntervalSince1970: 0)
+        
+        dataStore.removeData(ofTypes: dataTypes, modifiedSince: date) {
+            print("Все данные WKWebsiteDataStore были очищены")
+        }
+    }
+    
     @objc private func logoutButtonDidTap(_ sender: Any) {
         OAuth2TokenStorage.deleteToken()
-        print("logout")
+        clearCookies()
+        clearWebsiteData()
+        
         let viewController = SplashViewController()
         viewController.modalPresentationStyle = .fullScreen
         present(viewController, animated: true, completion: nil)

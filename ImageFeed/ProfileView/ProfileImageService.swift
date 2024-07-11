@@ -7,43 +7,6 @@
 
 import UIKit
 
-enum ProfileImageServiceError: Error {
-    case invalidRequest
-}
-
-// MARK: - UserResult
-struct UserResult: Codable {
-    let profileImage: ProfileImage
-    
-    enum CodingKeys: String, CodingKey {
-        case profileImage = "profile_image"
-    }
-}
-
-// MARK: - ProfileImage
-struct ProfileImage: Codable {
-    let small: String
-    let large: String
-}
-
-func makeProfileImageRequest(username: String) -> URLRequest? {
-    guard let baseUrl = Constants.defaultBaseUrl else {
-        fatalError("Invalid BaseUrl")
-    }
-    guard let url = URL(string: "/users/\(username)", relativeTo: baseUrl) else {
-        fatalError("InvalidUrl")
-    }
-    var request = URLRequest(url: url)
-    request.httpMethod = "GET"
-    
-    guard let token = OAuth2TokenStorage().token else {
-        fatalError("Error get token")
-    }
-    let tokenStringField = "Bearer \(token)"
-    
-    request.setValue(tokenStringField, forHTTPHeaderField: "Authorization")
-    return request
-}
 
 final class ProfileImageService {
     static let shared = ProfileImageService()
@@ -54,10 +17,29 @@ final class ProfileImageService {
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     
+    func makeProfileImageRequest(username: String) throws -> URLRequest? {
+        guard let baseUrl = Constants.defaultBaseUrl else {
+            throw ProfileImageServiceError.invalidBaseUrl
+        }
+        guard let url = URL(string: "/users/\(username)", relativeTo: baseUrl) else {
+            throw ProfileImageServiceError.invalidUrl
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        guard let token = OAuth2TokenStorage().token else {
+            throw ProfileImageServiceError.gettingTokenError
+        }
+        let tokenStringField = "Bearer \(token)"
+        
+        request.setValue(tokenStringField, forHTTPHeaderField: "Authorization")
+        return request
+    }
+    
     func fetchProfileImageURL(username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
         assert(Thread.isMainThread)
         
-        guard let request = makeProfileImageRequest(username: username) else {
+        guard let request = try? makeProfileImageRequest(username: username) else {
             completion(.failure(ProfileImageServiceError.invalidRequest))
             return
         }
@@ -72,7 +54,7 @@ final class ProfileImageService {
                                                     object: self,
                                                     userInfo: ["URL": profileImage])
             case .failure(let error):
-                print("Ошибка получения URL изображения профиля: \(error.localizedDescription)")
+                print("[ProfileImageService.fetchProfileImageURL]: \(ProfileImageServiceError.fetchProfileImageError) - Ошибка получения URL изображения профиля, \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }

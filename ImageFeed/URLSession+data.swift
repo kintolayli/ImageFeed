@@ -29,14 +29,14 @@ extension URLSession {
                 if 200 ..< 300 ~= statusCode {
                     fulfillCompletionOnTheMainThread(.success(data))
                 } else {
-                    print("NetworkError: HTTP status code: \(statusCode)")
+                    print("[URLSession.data]: NetworkError: HTTP status code: \(statusCode)")
                     fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
                 }
             } else if let error = error {
-                print("NetworkError: \(error.localizedDescription)")
+                print("[URLSession.data]: NetworkError: \(error.localizedDescription)")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
             } else {
-                print("NetworkError: URLSession error")
+                print("[URLSession.data]: NetworkError: URLSession error")
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
             }
         })
@@ -59,7 +59,8 @@ extension URLSession {
                     let object = try decoder.decode(T.self, from: data)
                     completionHandler(.success(object))
                 } catch {
-                    print("Ошибка декодирования: \(error.localizedDescription), Данные: \(String(data: data, encoding: .utf8) ?? "")")
+                    print("[URLSession.objectTask]: Ошибка декодирования \(error.localizedDescription) - Данные: \(String(data: data, encoding: .utf8) ?? "")")
+                    
                     completionHandler(.failure(error))
                 }
             case .failure(let error):

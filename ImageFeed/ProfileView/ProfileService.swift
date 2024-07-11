@@ -7,57 +7,6 @@
 
 import UIKit
 
-enum ProfileServiceError: Error {
-    case invalidRequest
-}
-
-struct ProfileResult: Codable {
-    let username: String
-    let firstName: String
-    let lastName: String
-    let bio: String?
-    
-    enum CodingKeys: String, CodingKey {
-        case username
-        case firstName = "first_name"
-        case lastName = "last_name"
-        case bio
-    }
-}
-
-struct Profile {
-    let username: String
-    let name: String
-    var loginName: String {
-        return "@\(username)"
-    }
-    let bio: String?
-    
-    init(username: String, firstName: String, lastName: String, bio: String?) {
-        self.username = username
-        self.name = "\(firstName) \(lastName)"
-        self.bio = bio
-    }
-    
-    static func makeProfileRequest() -> URLRequest? {
-        guard let baseUrl = Constants.defaultBaseUrl else {
-            fatalError("Invalid BaseUrl")
-        }
-        guard let url = URL(string: "/me", relativeTo: baseUrl) else {
-            fatalError("InvalidUrl")
-        }
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        
-        guard let token = OAuth2TokenStorage().token else {
-            fatalError("Error get token")
-        }
-        let tokenStringField = "Bearer \(token)"
-        
-        request.setValue(tokenStringField, forHTTPHeaderField: "Authorization")
-        return request
-    }
-}
 
 final class ProfileService {
     
@@ -69,10 +18,29 @@ final class ProfileService {
     
     private init() {}
     
+    func makeProfileRequest() throws -> URLRequest? {
+        guard let baseUrl = Constants.defaultBaseUrl else {
+            throw ProfileServiceError.invalidBaseUrl
+        }
+        guard let url = URL(string: "/me", relativeTo: baseUrl) else {
+            throw ProfileServiceError.invalidUrl
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        guard let token = OAuth2TokenStorage().token else {
+            throw ProfileServiceError.gettingTokenError
+        }
+        let tokenStringField = "Bearer \(token)"
+        
+        request.setValue(tokenStringField, forHTTPHeaderField: "Authorization")
+        return request
+    }
+    
     func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         assert(Thread.isMainThread)
         
-        guard let request = Profile.makeProfileRequest() else {
+        guard let request = try? makeProfileRequest() else {
             completion(.failure(ProfileServiceError.invalidRequest))
             return
         }
@@ -85,7 +53,7 @@ final class ProfileService {
                 ProfileImageService.shared.fetchProfileImageURL(username: response.username) { _ in }
                 completion(.success(profile))
             case .failure(let error):
-                print("Ошибка получения данных профиля: \(error.localizedDescription)")
+                print("[ProfileService.fetchProfile]: \(ProfileServiceError.fetchProfileError) - Ошибка получения данных профиля, \(error.localizedDescription)")
                 completion(.failure(error))
             }
             

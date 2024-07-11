@@ -9,6 +9,10 @@ import UIKit
 
 enum AuthServiceError: Error {
     case invalidRequest
+    case invalidResponse
+    case invalidBaseUrl
+    case invalidUrl
+    case invalidCode
 }
 
 final class OAuth2Service {
@@ -22,10 +26,11 @@ final class OAuth2Service {
     
     private init () {}
     
-    func makeOAuthTokenRequest(code: String) -> URLRequest? {
+    func makeOAuthTokenRequest(code: String) throws ->  URLRequest? {
         guard let baseURL = URL(string: "https://unsplash.com") else {
-            fatalError("Invalid base URL")
+            throw AuthServiceError.invalidBaseUrl
         }
+        
         guard let url = URL(
             string: "/oauth/token"
             + "?client_id=\(Constants.accessKey)"
@@ -35,7 +40,7 @@ final class OAuth2Service {
             + "&&grant_type=authorization_code",
             relativeTo: baseURL
         ) else {
-            fatalError("Invalid URL")
+            throw AuthServiceError.invalidUrl
         }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -47,14 +52,14 @@ final class OAuth2Service {
         assert(Thread.isMainThread)
         
         guard lastCode != code else {
-            completion(.failure(AuthServiceError.invalidRequest))
+            completion(.failure(AuthServiceError.invalidCode))
             return
         }
         
         task?.cancel()
         lastCode = code
         
-        guard let request = makeOAuthTokenRequest(code: code) else {
+        guard let request = try? makeOAuthTokenRequest(code: code) else {
             completion(.failure(AuthServiceError.invalidRequest))
             return
         }
@@ -65,8 +70,8 @@ final class OAuth2Service {
                 self?.tokenStorage.token = response.accessToken
                 completion(.success(response.accessToken))
             case .failure(let error):
-                print("Ошибка получения OAuth токена: \(error.localizedDescription)")
-                completion(.failure(error))
+                print("[OAuth2Service.fetchOAuthToken]: \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)")
+                completion(.failure(AuthServiceError.invalidResponse))
             }
             
             self?.task = nil

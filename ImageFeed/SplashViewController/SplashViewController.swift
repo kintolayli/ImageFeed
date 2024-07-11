@@ -19,6 +19,7 @@ class SplashViewController: UIViewController {
     private let profileService = ProfileService.shared
     private let oauth2Service = OAuth2Service.shared
     private let tokenStorage = OAuth2TokenStorage()
+    private var alertPresenter: AlertPresenter?
     
     var delegate: AuthViewControllerDelegate?
     
@@ -30,6 +31,9 @@ class SplashViewController: UIViewController {
         } else {
             let viewController = AuthViewController()
             viewController.delegate = self
+            
+            alertPresenter = AlertPresenter(viewController: viewController)
+            
             viewController.modalPresentationStyle = .fullScreen
             present(viewController, animated: true, completion: nil)
         }
@@ -65,9 +69,7 @@ class SplashViewController: UIViewController {
     }
     
     private func switchToTabBarController() {
-        guard let window = UIApplication.shared.windows.first else {
-            fatalError("Invalid Configuration")
-        }
+        guard let window = UIApplication.shared.windows.first else { return }
         let tabBarController = UIStoryboard(name: "Main", bundle: .main)
             .instantiateViewController(withIdentifier: "TabBarViewController")
         window.rootViewController = tabBarController
@@ -81,9 +83,7 @@ extension SplashViewController: AuthViewControllerDelegate {
     
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
         dismiss(animated: true) { [weak self] in
-            guard let self = self else {
-                fatalError("Failed to dismiss AuthViewController")
-            }
+            guard let self = self else { return }
             self.fetchOAuthToken(code)
         }
     }
@@ -99,9 +99,8 @@ extension SplashViewController: AuthViewControllerDelegate {
             switch result {
             case .success(_):
                 switchToTabBarController()
-            case .failure(_):
-                fatalError("Error getting profile data")
-                break
+            case .failure(let error):
+                print("[SplashViewController.fetchProfile]: \(AuthServiceError.invalidResponse) - Ошибка получения данных профиля, \(error.localizedDescription)")
             }
         }
     }
@@ -112,24 +111,23 @@ extension SplashViewController: AuthViewControllerDelegate {
         oauth2Service.fetchOAuthToken(code: code) { [weak self] result in
             UIBlockingProgressHUD.dismiss()
             
-            guard let self = self else {
-                fatalError("Failed to fetch OAuth token")
-            }
+            guard let self = self else { return }
             
             switch result {
             case .success:
-                guard let token = tokenStorage.token else {
-                    fatalError("Failed to get OAuth token")
-                }
+                guard let token = tokenStorage.token else { return }
                 fetchProfile(token: token)
-            case .failure:
-                print("Failed to fetch OAuth token")
+            case .failure(let error):
+                print("[SplashViewController.fetchOAuthToken]: \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)")
                 
-                let alert = UIAlertController(title: "Что-то пошло не так(", message: "Не удалось войти в систему", preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: "ОK", style: .default))
-                self.present(alert, animated: true, completion: nil)
-                
-                break
+                let alertModel = AlertModel(
+                    title: "Что-то пошло не так(",
+                    message: "Не удалось войти в систему",
+                    buttonTitle: "ОК",
+                    buttonAction: nil
+                )
+    
+                alertPresenter?.show(model: alertModel)
             }
         }
         
