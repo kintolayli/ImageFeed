@@ -53,7 +53,7 @@ final class ProfileService {
                 ProfileImageService.shared.fetchProfileImageURL(username: response.username) { _ in }
                 completion(.success(profile))
             case .failure(let error):
-                print("[ProfileService.fetchProfile]: \(ProfileServiceError.fetchProfileError) - Ошибка получения данных профиля, \(error.localizedDescription)")
+                print("[\(String(describing: self)).\(#function)]: \(ProfileServiceError.fetchProfileError) - Ошибка получения данных профиля, \(error.localizedDescription)")
                 completion(.failure(error))
             }
             

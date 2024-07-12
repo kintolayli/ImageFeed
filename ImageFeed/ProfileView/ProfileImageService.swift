@@ -54,7 +54,7 @@ final class ProfileImageService {
                                                     object: self,
                                                     userInfo: ["URL": profileImage])
             case .failure(let error):
-                print("[ProfileImageService.fetchProfileImageURL]: \(ProfileImageServiceError.fetchProfileImageError) - Ошибка получения URL изображения профиля, \(error.localizedDescription)")
+                print("[\(String(describing: self)).\(#function)]: \(ProfileImageServiceError.fetchProfileImageError) - Ошибка получения URL изображения профиля, \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }

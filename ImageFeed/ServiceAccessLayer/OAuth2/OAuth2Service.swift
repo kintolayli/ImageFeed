@@ -27,26 +27,26 @@ final class OAuth2Service {
     private init () {}
     
     func makeOAuthTokenRequest(code: String) throws ->  URLRequest? {
-        guard let baseURL = URL(string: "https://unsplash.com") else {
+        guard var urlComponents = URLComponents(string: Constants.unsplashTokenURLString) else {
             throw AuthServiceError.invalidBaseUrl
         }
         
-        guard let url = URL(
-            string: "/oauth/token"
-            + "?client_id=\(Constants.accessKey)"
-            + "&&client_secret=\(Constants.secretKey)"
-            + "&&redirect_uri=\(Constants.redirectURI)"
-            + "&&code=\(code)"
-            + "&&grant_type=authorization_code",
-            relativeTo: baseURL
-        ) else {
+        urlComponents.queryItems = [
+            URLQueryItem(name: "client_id", value: Constants.accessKey),
+            URLQueryItem(name: "client_secret", value: Constants.secretKey),
+            URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
+            URLQueryItem(name: "code", value: code),
+            URLQueryItem(name: "grant_type", value: "authorization_code")
+        ]
+        
+        guard let url = urlComponents.url else {
             throw AuthServiceError.invalidUrl
         }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         return request
     }
-
     
     func fetchOAuthToken(code: String, completion: @escaping (Result<String, Error>) -> Void ) {
         assert(Thread.isMainThread)
@@ -70,7 +70,7 @@ final class OAuth2Service {
                 self?.tokenStorage.token = response.accessToken
                 completion(.success(response.accessToken))
             case .failure(let error):
-                print("[OAuth2Service.fetchOAuthToken]: \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)")
+                print("[\(String(describing: self)).\(#function)]: \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)")
                 completion(.failure(AuthServiceError.invalidResponse))
             }
             

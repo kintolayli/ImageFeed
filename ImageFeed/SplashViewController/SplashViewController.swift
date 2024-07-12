@@ -100,7 +100,7 @@ extension SplashViewController: AuthViewControllerDelegate {
             case .success(_):
                 switchToTabBarController()
             case .failure(let error):
-                print("[SplashViewController.fetchProfile]: \(AuthServiceError.invalidResponse) - Ошибка получения данных профиля, \(error.localizedDescription)")
+                print("[\(String(describing: self)).\(#function)]: \(AuthServiceError.invalidResponse) - Ошибка получения данных профиля, \(error.localizedDescription)")
             }
         }
     }
@@ -118,7 +118,7 @@ extension SplashViewController: AuthViewControllerDelegate {
                 guard let token = tokenStorage.token else { return }
                 fetchProfile(token: token)
             case .failure(let error):
-                print("[SplashViewController.fetchOAuthToken]: \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)")
+                print("[\(String(describing: self)).\(#function)]: \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)")
                 
                 let alertModel = AlertModel(
                     title: "Что-то пошло не так(",
