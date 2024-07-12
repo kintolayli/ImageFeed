@@ -6,8 +6,13 @@
 //
 
 import UIKit
+import Kingfisher
+import WebKit
 
 class ProfileViewController: UIViewController {
+    
+    private let profileService = ProfileService.shared
+    private var profileImageServiceObserver: NSObjectProtocol?
     
     // MARK: - UI Components
     private let profileImage: UIImageView = {
@@ -20,7 +25,7 @@ class ProfileViewController: UIViewController {
     
     private let realNameLabel: UILabel = {
         let realNameLabel = UILabel()
-        realNameLabel.text = "Екатерина Новикова"
+        realNameLabel.text = ""
         realNameLabel.textColor = .ypWhite
         realNameLabel.font = UIFont.systemFont(ofSize: 23)
         return realNameLabel
@@ -28,7 +33,7 @@ class ProfileViewController: UIViewController {
     
     private let usernameLabel: UILabel = {
         let usernameLabel = UILabel()
-        usernameLabel.text = "@ekaterina_nov"
+        usernameLabel.text = ""
         usernameLabel.textColor = .ypGray
         usernameLabel.font = UIFont.systemFont(ofSize: 13)
         return usernameLabel
@@ -36,7 +41,7 @@ class ProfileViewController: UIViewController {
     
     private let textLabel: UILabel = {
         let textLabel = UILabel()
-        textLabel.text = "Hello, world!"
+        textLabel.text = ""
         textLabel.textColor = .ypWhite
         textLabel.font = UIFont.systemFont(ofSize: 13)
         return textLabel
@@ -57,11 +62,54 @@ class ProfileViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        updateProfileDetails(profile: profileService.profile)
+        
+        profileImageServiceObserver = NotificationCenter.default.addObserver(
+            forName: ProfileImageService.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self else { return }
+            self.updateProfileImage()
+        }
+        updateProfileImage()
+        
         logoutButton.addTarget(self, action: #selector(logoutButtonDidTap), for: .touchUpInside)
         setupUI()
     }
     
+    private func updateProfileImage() {
+        guard let profileImageURL = ProfileImageService.shared.profileImageURL,
+              let url = URL(string: profileImageURL)
+        else { return }
+
+        let processor = RoundCornerImageProcessor(cornerRadius: 20)
+        profileImage.kf.indicatorType = .activity
+        profileImage.kf.setImage(with: url,
+                                 placeholder: UIImage(named: "userpick_stub"),
+                                 options: [.processor(processor)]) { result in
+            switch result {
+            case .success(let value):
+                print(value.image)
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+        
+    }
+    
+    private func updateProfileDetails(profile: Profile?) {
+        guard let profile = profile else {
+            return
+        }
+        self.realNameLabel.text = profile.name
+        self.usernameLabel.text = profile.loginName
+        self.textLabel.text = profile.bio
+    }
+    
     private func setupUI() {
+        view.backgroundColor = .ypBlack
+        
         profileImage.translatesAutoresizingMaskIntoConstraints = false
         realNameLabel.translatesAutoresizingMaskIntoConstraints = false
         usernameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -96,8 +144,32 @@ class ProfileViewController: UIViewController {
         ])
     }
     
-    @objc
-    private func logoutButtonDidTap(_ sender: Any) {
-        print("logout")
+    func clearCookies() {
+        let cookieStorage = HTTPCookieStorage.shared
+        if let cookies = cookieStorage.cookies {
+            for cookie in cookies {
+                cookieStorage.deleteCookie(cookie)
+            }
+        }
+    }
+    
+    func clearWebsiteData() {
+        let dataStore = WKWebsiteDataStore.default()
+        let dataTypes = WKWebsiteDataStore.allWebsiteDataTypes()
+        let date = Date(timeIntervalSince1970: 0)
+        
+        dataStore.removeData(ofTypes: dataTypes, modifiedSince: date) {
+            print("Все данные WKWebsiteDataStore были очищены")
+        }
+    }
+    
+    @objc private func logoutButtonDidTap(_ sender: Any) {
+        OAuth2TokenStorage.deleteToken()
+        clearCookies()
+        clearWebsiteData()
+        
+        let viewController = SplashViewController()
+        viewController.modalPresentationStyle = .fullScreen
+        present(viewController, animated: true, completion: nil)
     }
 }
