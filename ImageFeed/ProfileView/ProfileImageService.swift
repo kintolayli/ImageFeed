@@ -12,10 +12,11 @@ final class ProfileImageService {
     static let shared = ProfileImageService()
     static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
     
-    private init() {}
     private(set) var profileImageURL: String?
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
+    
+    private init() {}
     
     func makeProfileImageRequest(username: String) throws -> URLRequest? {
         guard let baseUrl = Constants.defaultBaseUrl else {
