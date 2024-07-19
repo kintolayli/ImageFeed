@@ -95,7 +95,6 @@ class ProfileViewController: UIViewController {
                 print(error.localizedDescription)
             }
         }
-        
     }
     
     private func updateProfileDetails(profile: Profile?) {

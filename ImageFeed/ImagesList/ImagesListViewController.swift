@@ -6,13 +6,15 @@
 //
 
 import UIKit
+import Kingfisher
 
 class ImagesListViewController: UIViewController {
     private let showSingleImageSegueIdentifier = "ShowSingleImage"
+    private var imageListServiceObserver: NSObjectProtocol?
     
     @IBOutlet private var tableView: UITableView!
     
-    private let photosName: [String] = Array(0..<20).map{ "\($0)" }
+    private var photos: [Photo] = []
     private let imageListService = ImageListService.shared
     
     private lazy var dateFormatter: DateFormatter = {
@@ -24,13 +26,60 @@ class ImagesListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        imageListService.fetchPhotosNextPage() { _ in }
+        
+        imageListServiceObserver = NotificationCenter.default
+              .addObserver(
+                  forName: ImageListService.didChangeNotification,
+                  object: nil,
+                  queue: .main
+              ) { [weak self] _ in
+                  guard let self = self else { return }
+                  
+                  updateTableViewAnimated()
+              }
+    }
+    
+    private func updateListViewImage(indexPath: IndexPath) {
+        guard let url = URL(string: imageListService.photos[indexPath.item].largeImageUrl) else { return }
+        let imageView = UIImageView()
+        
+        let processor = RoundCornerImageProcessor(cornerRadius: 16)
+        imageView.kf.indicatorType = .activity
+        imageView.kf.setImage(with: url,
+                                 placeholder: UIImage(named: "userpick_stub"),
+                                 options: [.processor(processor)]) { result in
+            switch result {
+            case .success(let value):
+                print(value.image)
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
     
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         cell.backgroundColor = .clear
         
-        guard let image = UIImage(named: "\(indexPath.item)") else { return }
-        cell.mainImage.image = image
+        guard let placeholder_image = UIImage(named: "userpick_stub") else { return }
+        guard let url = URL(string: photos[indexPath.item].thumbImageURL) else { return }
+        let processor = RoundCornerImageProcessor(cornerRadius: 16)
+        cell.mainImage.kf.indicatorType = .activity
+        
+        cell.mainImage.kf.setImage(with: url,
+                                   placeholder: placeholder_image,
+                                 options: [.processor(processor)]) { result in
+            switch result {
+            case .success(let value):
+                print(value.image)
+                self.tableView.reloadRows(at: [indexPath], with: .automatic)
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
+        
+        
         cell.mainImage.layer.cornerRadius = 16
         cell.mainImage.contentMode = .scaleAspectFill
         
@@ -65,8 +114,25 @@ class ImagesListViewController: UIViewController {
                 return
             }
             
-            let image = UIImage(named: photosName[indexPath.row])
-            viewController.image = image
+            let imageView = UIImageView()
+            guard let placeholder_image = UIImage(named: "userpick_stub") else { return }
+            guard let url = URL(string: photos[indexPath.item].largeImageUrl) else { return }
+            let processor = RoundCornerImageProcessor(cornerRadius: 16)
+            imageView.kf.indicatorType = .activity
+            
+            imageView.kf.setImage(with: url,
+                                       placeholder: placeholder_image,
+                                     options: [.processor(processor)]) { result in
+                switch result {
+                case .success(let value):
+                    print(value.image)
+                    viewController.image = imageView.image
+                case .failure(let error):
+                    print(error.localizedDescription)
+                    viewController.image = placeholder_image
+                }
+            }
+            
         } else {
             super.prepare(for: segue, sender: sender)
         }
@@ -75,11 +141,13 @@ class ImagesListViewController: UIViewController {
 
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return photosName.count
+        return photos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath)
+        
+        cell.prepareForReuse()
         
         guard let imagesListCell = cell as? ImagesListCell else {
             return UITableViewCell()
@@ -89,10 +157,25 @@ extension ImagesListViewController: UITableViewDataSource {
         return imagesListCell
     }
     
+    func updateTableViewAnimated() {
+        let oldCount = photos.count
+        let newCount = imageListService.photos.count
+        photos = imageListService.photos
+        if oldCount != newCount {
+            tableView.performBatchUpdates {
+                let indexPaths = (oldCount..<newCount).map { i in
+                    IndexPath(row: i, section: 0)
+                }
+                tableView.insertRows(at: indexPaths, with: .automatic)
+            } completion: { _ in }
+        }
+        
+    }
+    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        if indexPath.row == photosName.count - 1 {
+        if indexPath.row == photos.count - 1 {
             imageListService.fetchPhotosNextPage { result in
-                print("1")
+                self.updateTableViewAnimated()
             }
         }
     }

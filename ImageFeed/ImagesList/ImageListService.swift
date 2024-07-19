@@ -21,8 +21,7 @@ final class ImageListService {
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
     
     private(set) var photos: [Photo] = []
-//    private var lastLoadedPage: Int?
-    private var lastLoadedPage: Int = 0
+    private var lastLoadedPage: Int?
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     
@@ -64,7 +63,8 @@ final class ImageListService {
     }
     
     func fetchPhotosNextPage(_ completion: @escaping (Result<String, Error>) -> Void) {
-        let nextPage = lastLoadedPage + 1
+        let nextPage = (lastLoadedPage ?? 0) + 1
+        print(nextPage)
         
         guard let request = try? makeImageListRequest(page: nextPage) else {
             completion(.failure(ImageListServiceError.invalidRequest))
@@ -90,11 +90,8 @@ final class ImageListService {
                         isLiked: element.likedByUser
                     )
                     
-                    DispatchQueue.main.async {
-                        self.photos.append(photo)
-                    }
-                    
-                    self.lastLoadedPage += 1
+                    self.photos.append(photo)
+                    self.lastLoadedPage = nextPage
                 }
                 
                 NotificationCenter.default.post(name: ImageListService.didChangeNotification, object: nil)

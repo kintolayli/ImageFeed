@@ -16,10 +16,22 @@ final class ImagesListCell: UITableViewCell {
     @IBOutlet weak var mainImage: UIImageView!
     @IBOutlet weak var gradientView: UIView!
     
+    private let stubImage: UIImageView = {
+        let view = UIImageView()
+        view.image = UIImage(named: "scribble")
+        return view
+    }()
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         
         contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 4, left: 0, bottom: 4, right: 0))
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse( )
+        
+        mainImage.kf.cancelDownloadTask()
     }
     
 }
