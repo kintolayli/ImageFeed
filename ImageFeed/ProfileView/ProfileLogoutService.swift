@@ -29,7 +29,6 @@ final class ProfileLogoutService {
                     WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
                 }
             }
-        
     }
     
     private func cleanProfile() {

@@ -144,10 +144,22 @@ class ProfileViewController: UIViewController {
     }
     
     @objc private func logoutButtonDidTap(_ sender: Any) {
-        ProfileLogoutService.shared.logout()
-            
-        let viewController = SplashViewController()
-        viewController.modalPresentationStyle = .fullScreen
-        present(viewController, animated: true, completion: nil)
+        let presenter = AlertPresenter(viewController: self)
+        
+        let alertModel = AlertModelWith2Buttons(
+            title: "Пока, пока!",
+            message: "Уверены что хотите выйти?",
+            buttonTitle1: "Да",
+            buttonAction1: { [weak self] _ in
+                ProfileLogoutService.shared.logout()
+                let viewController = SplashViewController()
+                viewController.modalPresentationStyle = .fullScreen
+                self?.present(viewController, animated: true, completion: nil)
+            },
+            buttonTitle2: "Нет",
+            buttonAction2: nil
+        )
+        
+        presenter.showWith2Buttons(model: alertModel)
     }
 }

@@ -16,7 +16,6 @@ enum ImageListServiceError: Error {
     case sendLikeError
 }
 
-
 final class ImageListService {
     
     static let shared = ImageListService()
@@ -26,6 +25,7 @@ final class ImageListService {
     private var lastLoadedPage: Int?
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
+    private let dateFormatter = ISO8601DateFormatter()
     
     private init() {}
     
@@ -82,14 +82,10 @@ final class ImageListService {
             case .success(let response):
                 for element in response {
                     
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-                    guard let date = dateFormatter.date(from: element.createdAt) else { return }
-                    
                     let photo = Photo(
                         id: element.id,
                         size: CGSize(width: element.width, height: element.height),
-                        createdAt: date,
+                        createdAt: self.dateFormatter.date(from: element.createdAt),
                         welcomeDescription: element.description,
                         thumbImageURL: element.urls.small,
                         largeImageUrl: element.urls.full,

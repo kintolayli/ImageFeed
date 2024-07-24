@@ -23,12 +23,10 @@ final class ImagesListCell: UITableViewCell {
     let likeButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "like_button_off"), for: .normal)
-        
         button.layer.shadowColor = UIColor.ypBlack.cgColor
         button.layer.shadowOpacity = 0.2
         button.layer.shadowOffset = CGSize(width: 0, height:1)
         button.layer.shadowRadius = 4
-        
         return button
     }()
     

@@ -33,11 +33,11 @@ class ImagesListViewController: UIViewController {
     
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd MMMM yyyy"
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
         formatter.locale = Locale(identifier: "ru_RU")
         return formatter
     }()
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -104,7 +104,12 @@ class ImagesListViewController: UIViewController {
             }
         }
         
-        cell.cellDataLabel.text = dateFormatter.string(from: Date())
+        if let date = photos[indexPath.item].createdAt {
+            cell.cellDataLabel.text = dateFormatter.string(from: date)
+        } else {
+            cell.cellDataLabel.text = ""
+        }
+
         cell.likeButton.setTitle("", for: .normal)
         cell.setIsLiked(state: photos[indexPath.item].isLiked)
     }

@@ -102,6 +102,7 @@
 		8A1642392C41D1060050FA94 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				8A2FC5492C33E8C4000E8EC8 /* UIBlockingProgressHUD.swift */,
 				8A6CB5B42BED12AF005F9E4C /* extension+CALayer.swift */,
 				8A9321402C19D5BE00D73131 /* URLSession+data.swift */,
 				8ADDBB9E2C4DDD1A0093B13D /* GradientView.swift */,
@@ -177,7 +178,6 @@
 				8A6938AD2BEA984B009134B0 /* Assets.xcassets */,
 				8A6938AF2BEA984B009134B0 /* LaunchScreen.storyboard */,
 				8A6938B22BEA984B009134B0 /* Info.plist */,
-				8A2FC5492C33E8C4000E8EC8 /* UIBlockingProgressHUD.swift */,
 			);
 			path = ImageFeed;
 			sourceTree = "<group>";

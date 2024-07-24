@@ -29,6 +29,7 @@ class SingleImageViewController: UIViewController {
     
     var imageView: UIImageView = {
         let imageView = UIImageView()
+        imageView.image = UIImage(named: "scribble")
         return imageView
     }()
     
