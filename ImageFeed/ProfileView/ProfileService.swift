@@ -18,6 +18,10 @@ final class ProfileService {
     
     private init() {}
     
+    func clearProfile() {
+        profile = nil
+    }
+    
     func makeProfileRequest() throws -> URLRequest? {
         guard let baseUrl = Constants.defaultBaseUrl else {
             throw ProfileServiceError.invalidBaseUrl

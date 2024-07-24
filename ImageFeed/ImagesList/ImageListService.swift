@@ -12,6 +12,8 @@ enum ImageListServiceError: Error {
     case invalidUrl
     case invalidRequest
     case gettingTokenError
+    case fetchImageError
+    case sendLikeError
 }
 
 
@@ -31,6 +33,10 @@ final class ImageListService {
         case latest = "latest"
         case oldest = "oldest"
         case popular = "popular"
+    }
+    
+    func cleanImageListService() {
+        self.photos.removeAll()
     }
     
     func makeImageListRequest(page: Int, perPage: Int = 10, orderBy: OrderBy = .latest) throws -> URLRequest? {
@@ -85,7 +91,7 @@ final class ImageListService {
                         size: CGSize(width: element.width, height: element.height),
                         createdAt: date,
                         welcomeDescription: element.description,
-                        thumbImageURL: element.urls.thumb,
+                        thumbImageURL: element.urls.small,
                         largeImageUrl: element.urls.full,
                         isLiked: element.likedByUser
                     )
@@ -97,11 +103,69 @@ final class ImageListService {
                 NotificationCenter.default.post(name: ImageListService.didChangeNotification, object: nil)
                 
             case .failure(let error):
-                print("[\(String(describing: self)).\(#function)]: \(ProfileImageServiceError.fetchProfileImageError) - Ошибка получения ленты изображений, \(error.localizedDescription)")
+                print("[\(String(describing: self)).\(#function)]: \(ImageListServiceError.fetchImageError) - Ошибка получения ленты изображений, \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }
         
+        self.task = task
+        task.resume()
+    }
+    
+    func makeLikeRequest(photoId: String, isLiked: Bool) throws -> URLRequest {
+        guard var urlComponents = URLComponents(string: Constants.defaultBaseUrlString) else {
+            throw ImageListServiceError.invalidBaseUrl
+        }
+        
+        urlComponents.path = "//photos/\(photoId)/like"
+        
+        guard let url = urlComponents.url else {
+            throw ImageListServiceError.invalidUrl
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = isLiked ? "DELETE" : "POST"
+        
+        guard let token = OAuth2TokenStorage().token else {
+            throw ImageListServiceError.gettingTokenError
+        }
+        let tokenStringField = "Bearer \(token)"
+        request.setValue(tokenStringField, forHTTPHeaderField: "Authorization")
+        return request
+    }
+    
+    func changeLike(photoId: String, isLiked: Bool, _ completion: @escaping (Result<Any, Error>) -> Void)  {
+        
+        guard let request = try? makeLikeRequest(photoId: photoId, isLiked: isLiked) else {
+            completion(.failure(ImageListServiceError.invalidRequest))
+            return
+        }
+        
+        let task = urlSession.objectTask(for: request) { (result: Result<LikeResult, Error>) in
+            switch result {
+            case .success(let response):
+                
+                if let index = self.photos.firstIndex(where: { $0.id == response.photo.id}) {
+                    let photo = self.photos[index]
+                    let newPhoto = Photo(
+                        id: photo.id,
+                        size: photo.size,
+                        createdAt: photo.createdAt,
+                        welcomeDescription: photo.welcomeDescription,
+                        thumbImageURL: photo.thumbImageURL,
+                        largeImageUrl: photo.largeImageUrl,
+                        isLiked: !photo.isLiked
+                    )
+                    
+                    self.photos[index] = newPhoto
+                    completion(.success(response))
+                }
+                
+            case .failure(let error):
+                print("[\(String(describing: self)).\(#function)]: \(ImageListServiceError.sendLikeError) - Ошибка при отправке запроса лайка, \(error.localizedDescription)")
+                completion(.failure(error))
+            }
+        }
         self.task = task
         task.resume()
     }

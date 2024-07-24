@@ -18,6 +18,10 @@ final class ProfileImageService {
     
     private init() {}
     
+    func clearProfileImage() {
+        profileImageURL = nil
+    }
+    
     func makeProfileImageRequest(username: String) throws -> URLRequest? {
         guard let baseUrl = Constants.defaultBaseUrl else {
             throw ProfileImageServiceError.invalidBaseUrl

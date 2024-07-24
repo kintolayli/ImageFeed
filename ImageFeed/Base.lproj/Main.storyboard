@@ -92,19 +92,8 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" name="YP Black"/>
-                                        <connections>
-                                            <outlet property="cellDataLabel" destination="3w4-In-VNW" id="65G-cS-JAw"/>
-                                            <outlet property="contentView" destination="BvG-6n-2KI" id="7Xe-hM-TMF"/>
-                                            <outlet property="gradientView" destination="nzt-2J-gPs" id="tp1-iq-JQr"/>
-                                            <outlet property="likeButton" destination="V6C-ZL-xnK" id="PTO-ar-gEW"/>
-                                            <outlet property="mainImage" destination="Xvr-6g-nGC" id="ojl-GR-JLA"/>
-                                        </connections>
                                     </tableViewCell>
                                 </prototypes>
-                                <connections>
-                                    <outlet property="dataSource" destination="BYZ-38-t0r" id="kyd-Aa-pb5"/>
-                                    <outlet property="delegate" destination="BYZ-38-t0r" id="Blz-yn-yV1"/>
-                                </connections>
                             </tableView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -118,7 +107,6 @@
                     </view>
                     <tabBarItem key="tabBarItem" title="" image="tab_editorial_active" id="QHz-ve-QMY"/>
                     <connections>
-                        <outlet property="tableView" destination="WBJ-de-Y31" id="jNs-BX-4DT"/>
                         <segue destination="2QP-c8-WSX" kind="show" identifier="ShowSingleImage" id="5IR-4b-khq"/>
                     </connections>
                 </viewController>
@@ -129,15 +117,15 @@
         <!--Single Image View Controller-->
         <scene sceneID="tu5-il-zrP">
             <objects>
-                <viewController modalPresentationStyle="fullScreen" id="2QP-c8-WSX" customClass="SingleImageViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="SingleImageViewController" modalPresentationStyle="fullScreen" id="2QP-c8-WSX" customClass="SingleImageViewController" customModule="ImageFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ivv-oU-skC">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Qsf-oN-c12">
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Qsf-oN-c12">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <subviews>
-                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" misplaced="YES" image="scribble" translatesAutoresizingMaskIntoConstraints="NO" id="52x-7Z-0Zp" userLabel="contentView">
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="52x-7Z-0Zp" userLabel="contentView">
                                         <rect key="frame" x="155" y="389" width="83" height="75"/>
                                     </imageView>
                                 </subviews>
@@ -150,9 +138,6 @@
                                 </constraints>
                                 <viewLayoutGuide key="contentLayoutGuide" id="EDF-x0-KHS"/>
                                 <viewLayoutGuide key="frameLayoutGuide" id="Qng-gk-NuX"/>
-                                <connections>
-                                    <outlet property="delegate" destination="2QP-c8-WSX" id="bf1-v8-WXe"/>
-                                </connections>
                             </scrollView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" hasAttributedTitle="YES" translatesAutoresizingMaskIntoConstraints="NO" id="z8K-ml-qay" userLabel="sharingButton">
                                 <rect key="frame" x="159" y="751" width="75" height="51"/>
@@ -196,10 +181,6 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="meV-ag-KQg"/>
-                    <connections>
-                        <outlet property="imageView" destination="52x-7Z-0Zp" id="0CO-cW-Q6k"/>
-                        <outlet property="scrollView" destination="Qsf-oN-c12" id="2fU-8N-aT2"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dlj-hy-ulv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

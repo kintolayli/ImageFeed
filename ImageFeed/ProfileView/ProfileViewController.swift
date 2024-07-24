@@ -143,30 +143,9 @@ class ProfileViewController: UIViewController {
         ])
     }
     
-    func clearCookies() {
-        let cookieStorage = HTTPCookieStorage.shared
-        if let cookies = cookieStorage.cookies {
-            for cookie in cookies {
-                cookieStorage.deleteCookie(cookie)
-            }
-        }
-    }
-    
-    func clearWebsiteData() {
-        let dataStore = WKWebsiteDataStore.default()
-        let dataTypes = WKWebsiteDataStore.allWebsiteDataTypes()
-        let date = Date(timeIntervalSince1970: 0)
-        
-        dataStore.removeData(ofTypes: dataTypes, modifiedSince: date) {
-            print("Все данные WKWebsiteDataStore были очищены")
-        }
-    }
-    
     @objc private func logoutButtonDidTap(_ sender: Any) {
-        OAuth2TokenStorage.deleteToken()
-        clearCookies()
-        clearWebsiteData()
-        
+        ProfileLogoutService.shared.logout()
+            
         let viewController = SplashViewController()
         viewController.modalPresentationStyle = .fullScreen
         present(viewController, animated: true, completion: nil)
