@@ -7,8 +7,9 @@
 
 import Foundation
 
-// MARK: - Welcome
+
 struct LikeResult: Codable {
+    
     let photo: PhotoResult
     let user: ProfileResult
 }

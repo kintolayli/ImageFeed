@@ -9,7 +9,7 @@ import UIKit
 import Kingfisher
 import WebKit
 
-class ProfileViewController: UIViewController {
+final class ProfileViewController: UIViewController {
     
     private let profileService = ProfileService.shared
     private var profileImageServiceObserver: NSObjectProtocol?
@@ -82,17 +82,23 @@ class ProfileViewController: UIViewController {
         guard let profileImageURL = ProfileImageService.shared.profileImageURL,
               let url = URL(string: profileImageURL)
         else { return }
-
+        
         let processor = RoundCornerImageProcessor(cornerRadius: 20)
         profileImage.kf.indicatorType = .activity
         profileImage.kf.setImage(with: url,
                                  placeholder: UIImage(named: "userpick_stub"),
                                  options: [.processor(processor)]) { result in
             switch result {
-            case .success(let value):
-                print(value.image)
+            case .success:
+                // TODO: - Нотификация после обновления изображения профиля
+                break
             case .failure(let error):
-                print(error.localizedDescription)
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                \(ProfileImageServiceError.fetchProfileImageError) - Ошибка обновления изображения профиля, \(error.localizedDescription)
+                """
+                print(logMessage)
             }
         }
     }
@@ -109,17 +115,10 @@ class ProfileViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = .ypBlack
         
-        profileImage.translatesAutoresizingMaskIntoConstraints = false
-        realNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        usernameLabel.translatesAutoresizingMaskIntoConstraints = false
-        textLabel.translatesAutoresizingMaskIntoConstraints = false
-        logoutButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(profileImage)
-        view.addSubview(realNameLabel)
-        view.addSubview(usernameLabel)
-        view.addSubview(textLabel)
-        view.addSubview(logoutButton)
+        [profileImage, realNameLabel, usernameLabel, textLabel, logoutButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
         
         NSLayoutConstraint.activate([
             profileImage.widthAnchor.constraint(equalToConstant: 70),

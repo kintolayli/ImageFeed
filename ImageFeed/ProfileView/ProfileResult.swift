@@ -8,19 +8,10 @@
 import Foundation
 
 
-enum ProfileServiceError: Error {
-    case invalidRequest
-    case invalidResponse
-    case invalidBaseUrl
-    case invalidUrl
-    case gettingTokenError
-    case fetchProfileError
-}
-
 struct ProfileResult: Codable {
     let username: String
     let firstName: String
-    let lastName: String
+    let lastName: String?
     let bio: String?
     
     enum CodingKeys: String, CodingKey {

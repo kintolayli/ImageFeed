@@ -8,16 +8,7 @@
 import Foundation
 
 
-enum ProfileImageServiceError: Error {
-    case invalidRequest
-    case invalidResponse
-    case invalidBaseUrl
-    case invalidUrl
-    case gettingTokenError
-    case fetchProfileImageError
-}
-
-struct UserResult: Codable {
+struct ProfileImageResult: Codable {
     let profileImage: ProfileImage
     
     enum CodingKeys: String, CodingKey {

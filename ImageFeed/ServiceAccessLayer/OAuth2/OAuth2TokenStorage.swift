@@ -10,6 +10,7 @@ import SwiftKeychainWrapper
 
 
 final class OAuth2TokenStorage {
+    
     var token: String? {
         get {
             KeychainWrapper.standard.string(forKey: "bearerToken")

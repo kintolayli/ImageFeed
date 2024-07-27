@@ -9,10 +9,11 @@ import UIKit
 
 
 final class ImagesListCell: UITableViewCell {
+    
     static let reuseIdentifier = "ImagesListCell"
     weak var delegate: ImagesListCellDelegate?
     
-    let cellDataLabel: UILabel = {
+    private let cellDataLabel: UILabel = {
         let label = UILabel()
         let font = UIFont(name: "SFProText-Regular", size: 13)
         label.font = font
@@ -20,7 +21,7 @@ final class ImagesListCell: UITableViewCell {
         return label
     }()
     
-    let likeButton: UIButton = {
+    private let likeButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "like_button_off"), for: .normal)
         button.layer.shadowColor = UIColor.ypBlack.cgColor
@@ -30,7 +31,7 @@ final class ImagesListCell: UITableViewCell {
         return button
     }()
     
-    let mainImage: UIImageView = {
+    private let mainImage: UIImageView = {
         let view = UIImageView()
         let whiteColorWithAlpha = UIColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 0.5)
         view.backgroundColor = whiteColorWithAlpha
@@ -40,12 +41,12 @@ final class ImagesListCell: UITableViewCell {
         return view
     }()
     
-    let gradientView: UIView = {
+    private let gradientView: UIView = {
         let view = GradientView()
         return view
     }()
     
-    let stubImageView: UIImageView = {
+    private let stubImageView: UIImageView = {
         let view = UIImageView()
         view.image = UIImage(named: "scribble")
         view.clipsToBounds = true
@@ -61,7 +62,7 @@ final class ImagesListCell: UITableViewCell {
     }
     
     required init?(coder aDecoder: NSCoder) {
-       super.init(coder: aDecoder)
+        super.init(coder: aDecoder)
     }
     
     override func layoutSubviews() {
@@ -84,30 +85,30 @@ final class ImagesListCell: UITableViewCell {
         delegate?.imageListCellDidTapLike(self)
     }
     
-    func setIsLiked(state: Bool) {
+    func setIsLiked(isLiked: Bool) {
         DispatchQueue.main.async {
-            if state {
-                self.likeButton.setImage(UIImage(named: "like_button_on"), for: .normal)
-            } else {
-                self.likeButton.setImage(UIImage(named: "like_button_off"), for: .normal)
-            }
+            let imageName = isLiked ? "like_button_on" : "like_button_off"
+            self.likeButton.setImage(UIImage(named: imageName), for: .normal)
+        }
+    }
+    
+    func updateCell(cellDataLabelTitle: String, likeButtonTitle: String, imageView: UIImageView) {
+        DispatchQueue.main.async {
+            self.cellDataLabel.text = cellDataLabelTitle
+            self.likeButton.setTitle(likeButtonTitle, for: .normal)
+            self.mainImage.image = imageView.image
         }
     }
     
     private func setupUI() {
         
         mainImage.addSubview(gradientView)
-        
-        contentView.addSubview(stubImageView)
-        contentView.addSubview(mainImage)
-        contentView.addSubview(cellDataLabel)
-        contentView.addSubview(likeButton)
-        
-        stubImageView.translatesAutoresizingMaskIntoConstraints = false
-        mainImage.translatesAutoresizingMaskIntoConstraints = false
         gradientView.translatesAutoresizingMaskIntoConstraints = false
-        cellDataLabel.translatesAutoresizingMaskIntoConstraints = false
-        likeButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        [stubImageView, mainImage, cellDataLabel, likeButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            contentView.addSubview($0)
+        }
         
         NSLayoutConstraint.activate( [
             mainImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),

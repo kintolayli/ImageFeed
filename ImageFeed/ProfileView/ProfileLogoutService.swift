@@ -37,6 +37,6 @@ final class ProfileLogoutService {
     }
     
     private func cleanImageFeed() {
-        ProfileImageService.shared.clearProfileImage()
+        ImageListService.shared.cleanImageListService()
     }
 }

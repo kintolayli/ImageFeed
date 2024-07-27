@@ -8,14 +8,14 @@
 import UIKit
 
 
-class SingleImageViewController: UIViewController {
-    var image: UIImage? {
+final class SingleImageViewController: UIViewController {
+    
+    private var image: UIImage? {
         didSet {
             guard isViewLoaded, let image else { return }
             
             imageView.image = image
             imageView.frame.size = image.size
-            rescaleAndCenterImageInScrollView(image: image)
         }
     }
     weak var delegate: UIViewController?
@@ -27,7 +27,7 @@ class SingleImageViewController: UIViewController {
         return scrollView
     }()
     
-    var imageView: UIImageView = {
+    private var imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "scribble")
         return imageView
@@ -57,7 +57,6 @@ class SingleImageViewController: UIViewController {
         guard let image else { return }
         imageView.image = image
         imageView.frame.size = image.size
-        rescaleAndCenterImageInScrollView(image: image)
     }
     
     @objc private func didTapBackButton(_ sender: Any) {
@@ -66,7 +65,7 @@ class SingleImageViewController: UIViewController {
     
     @objc private func didTapShareButton(_ sender: Any) {
         guard let image = imageView.image else { return }
-
+        
         let activityViewController = UIActivityViewController(
             activityItems: [image],
             applicationActivities: nil
@@ -76,20 +75,21 @@ class SingleImageViewController: UIViewController {
             activityViewController.overrideUserInterfaceStyle = .dark
         }
         
-         activityViewController.excludedActivityTypes = [
-             UIActivity.ActivityType.assignToContact,
-             UIActivity.ActivityType.saveToCameraRoll,
-             UIActivity.ActivityType.postToFacebook
-         ]
-
+        activityViewController.excludedActivityTypes = [
+            UIActivity.ActivityType.assignToContact,
+            UIActivity.ActivityType.saveToCameraRoll,
+            UIActivity.ActivityType.postToFacebook
+        ]
+        
         present(activityViewController, animated: true, completion: nil)
     }
     
-    private func rescaleAndCenterImageInScrollView(image: UIImage) {
+    func rescaleAndCenterImageInScrollView() {
         let minZoomScale = scrollView.minimumZoomScale
         let maxZoomScale = scrollView.maximumZoomScale
         view.layoutIfNeeded()
         let visibleRectSize = scrollView.bounds.size
+        guard let image = imageView.image else { return }
         let imageSize = image.size
         let hScale = visibleRectSize.width / imageSize.width
         let vScale = visibleRectSize.height / imageSize.height
@@ -110,11 +110,17 @@ class SingleImageViewController: UIViewController {
             
             guard let self = self else { return }
             switch result {
-            case .success(let imageResult):
-                self.rescaleAndCenterImageInScrollView(image: imageResult.image)
+            case .success(_):
+                self.rescaleAndCenterImageInScrollView()
             case .failure(let error):
                 self.showError(url)
-                print("[\(String(describing: self)).\(#function)]: - Ошибка загрузки изображения, \(error.localizedDescription)")
+                
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                - Ошибка загрузки изображения, \(error.localizedDescription)")
+                """
+                print(logMessage)
             }
         }
     }
@@ -139,15 +145,13 @@ class SingleImageViewController: UIViewController {
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
         
-        view.addSubview(scrollView)
-        view.addSubview(sharingButton)
-        view.addSubview(backwardButton)
         scrollView.addSubview(imageView)
-        
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        sharingButton.translatesAutoresizingMaskIntoConstraints = false
-        backwardButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        [scrollView, sharingButton, backwardButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
         
         NSLayoutConstraint.activate([
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),

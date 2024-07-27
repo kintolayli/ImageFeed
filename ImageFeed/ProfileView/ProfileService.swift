@@ -11,7 +11,7 @@ import UIKit
 final class ProfileService {
     
     static let shared = ProfileService()
-
+    
     private(set) var profile: Profile?
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
@@ -22,7 +22,7 @@ final class ProfileService {
         profile = nil
     }
     
-    func makeProfileRequest() throws -> URLRequest? {
+    private func makeProfileRequest() throws -> URLRequest? {
         guard let baseUrl = Constants.defaultBaseUrl else {
             throw ProfileServiceError.invalidBaseUrl
         }
@@ -52,12 +52,22 @@ final class ProfileService {
         let task = urlSession.objectTask(for: request) { (result: Result<ProfileResult, Error>) in
             switch result {
             case .success(let response):
-                let profile = Profile(username: response.username, firstName: response.firstName, lastName: response.lastName, bio: response.bio)
+                let profile = Profile(
+                    username: response.username,
+                    firstName: response.firstName,
+                    lastName: response.lastName ?? "",
+                    bio: response.bio
+                )
                 self.profile = profile
                 ProfileImageService.shared.fetchProfileImageURL(username: response.username) { _ in }
                 completion(.success(profile))
             case .failure(let error):
-                print("[\(String(describing: self)).\(#function)]: \(ProfileServiceError.fetchProfileError) - Ошибка получения данных профиля, \(error.localizedDescription)")
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                \(ProfileServiceError.fetchProfileError) - Ошибка получения данных профиля, \(error.localizedDescription)
+                """
+                print(logMessage)
                 completion(.failure(error))
             }
             

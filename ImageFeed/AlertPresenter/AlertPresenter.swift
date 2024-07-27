@@ -8,23 +8,7 @@
 import UIKit
 
 
-struct AlertModel {
-    let title: String
-    let message: String
-    let buttonTitle: String
-    let buttonAction: ((UIAlertAction) -> Void)?
-}
-
-struct AlertModelWith2Buttons {
-    let title: String
-    let message: String
-    let buttonTitle1: String
-    let buttonAction1: ((UIAlertAction) -> Void)?
-    let buttonTitle2: String
-    let buttonAction2: ((UIAlertAction) -> Void)?
-}
-
-class AlertPresenter {
+final class AlertPresenter {
     private weak var viewController: UIViewController?
     
     init(viewController: UIViewController) {

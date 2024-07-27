@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum Constants {
+enum Constants {
     static let accessKey = "vduxIzYPQCaGVtwf1eoMIVA9HfZFKyBsQqNo7Z2rVdk"
     static let secretKey = "RR0pTZQi8-zx7bhNYhec8Zpn2lwwyabXKo-R9YWrrI8"
     static let redirectURI = "urn:ietf:wg:oauth:2.0:oob"

@@ -7,13 +7,10 @@
 
 import UIKit
 
-protocol AuthViewControllerDelegate: AnyObject {
-    func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String)
-}
 
-class AuthViewController: UIViewController {
+final class AuthViewController: UIViewController {
     
-    var webView: WebViewViewController?
+    private var webView: WebViewViewController?
     private let oauth2Service = OAuth2Service.shared
     private let ShowWebViewSegueIdentifier = "ShowWebView"
     weak var delegate: AuthViewControllerDelegate?
@@ -47,11 +44,11 @@ class AuthViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .ypBlack
-        view.addSubview(logoImageView)
-        view.addSubview(loginButton)
         
-        logoImageView.translatesAutoresizingMaskIntoConstraints = false
-        loginButton.translatesAutoresizingMaskIntoConstraints = false
+        [logoImageView, loginButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
         
         NSLayoutConstraint.activate([
             logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -86,7 +83,7 @@ extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
         delegate?.authViewController(self, didAuthenticateWithCode: code)
     }
-
+    
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
         dismiss(animated: true)
     }

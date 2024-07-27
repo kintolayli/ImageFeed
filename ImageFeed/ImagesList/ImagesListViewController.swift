@@ -8,17 +8,17 @@
 import UIKit
 import Kingfisher
 
-class ImagesListViewController: UIViewController {
-    private let showSingleImageSegueIdentifier = "ShowSingleImage"
+
+final class ImagesListViewController: UIViewController {
     private var imageListServiceObserver: NSObjectProtocol?
     
-    let placeholderImage: UIImageView = {
+    private let placeholderImage: UIImageView = {
         let view = UIImageView()
         view.image = UIImage(named: "scribble")
         return view
     }()
     
-    let tableView: UITableView = {
+    private let tableView: UITableView = {
         let tableView = UITableView()
         tableView.backgroundColor = .ypBlack
         tableView.register(
@@ -41,36 +41,38 @@ class ImagesListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
-        
-        UIBlockingProgressHUD.show()
-        imageListService.fetchPhotosNextPage() { _ in }
-        
         tableView.delegate = self
         tableView.dataSource = self
         
+        setupUI()
+        setupObserver()
+    }
+    
+    private func setupObserver() {
+        UIBlockingProgressHUD.show()
+        imageListService.fetchPhotosNextPage() { _ in }
         imageListServiceObserver = NotificationCenter.default
-              .addObserver(
-                  forName: ImageListService.didChangeNotification,
-                  object: nil,
-                  queue: .main
-              ) { [weak self] _ in
-                  guard let self = self else { return }
-                  
-                  self.updateTableViewAnimated()
-                  UIBlockingProgressHUD.dismiss()
-                  placeholderImage.isHidden = true
-              }
+            .addObserver(
+                forName: ImageListService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                
+                self.updateTableViewAnimated()
+                UIBlockingProgressHUD.dismiss()
+                placeholderImage.isHidden = true
+            }
     }
     
     private func setupUI() {
         view.backgroundColor = .ypBlack
-        view.addSubview(tableView)
-        view.addSubview(placeholderImage)
-        
-        tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .ypBlack
-        placeholderImage.translatesAutoresizingMaskIntoConstraints = false
+        
+        [tableView, placeholderImage].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
         
         NSLayoutConstraint.activate([
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -85,33 +87,56 @@ class ImagesListViewController: UIViewController {
         ])
     }
     
-    func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
+    private func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         cell.backgroundColor = .clear
         
         guard let url = URL(string: photos[indexPath.item].thumbImageURL) else { return }
+        let imageView = UIImageView()
         let processor = RoundCornerImageProcessor(cornerRadius: 8)
-        cell.mainImage.kf.indicatorType = .activity
-        
-        cell.mainImage.kf.setImage(with: url,
-                                   placeholder: .none,
-                                 options: [.processor(processor)]) { result in
+        imageView.kf.indicatorType = .activity
+        imageView.kf.setImage(with: url,
+                              placeholder: .none,
+                              options: [.processor(processor)]) { result in
             switch result {
-            case .success(let value):
-                print(value.image)
+            case .success(_):
+                
+                var textDate = ""
+                if let date = self.photos[indexPath.item].createdAt {
+                    textDate = self.dateFormatter.string(from: date)
+                }
+                
+                cell.updateCell(
+                    cellDataLabelTitle: textDate,
+                    likeButtonTitle: "",
+                    imageView: imageView
+                )
                 self.tableView.reloadRows(at: [indexPath], with: .automatic)
+                
             case .failure(let error):
-                print(error.localizedDescription)
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                \(ImageListServiceError.fetchImageError) - Ошибка получения изображения ячейки таблицы, \(error.localizedDescription)
+                """
+                print(logMessage)
             }
         }
         
-        if let date = photos[indexPath.item].createdAt {
-            cell.cellDataLabel.text = dateFormatter.string(from: date)
-        } else {
-            cell.cellDataLabel.text = ""
+        cell.setIsLiked(isLiked: photos[indexPath.item].isLiked)
+    }
+    
+    private func updateTableViewAnimated() {
+        let oldCount = photos.count
+        let newCount = imageListService.photos.count
+        photos = imageListService.photos
+        if oldCount != newCount {
+            tableView.performBatchUpdates {
+                let indexPaths = (oldCount..<newCount).map { i in
+                    IndexPath(row: i, section: 0)
+                }
+                tableView.insertRows(at: indexPaths, with: .automatic)
+            } completion: { _ in }
         }
-
-        cell.likeButton.setTitle("", for: .normal)
-        cell.setIsLiked(state: photos[indexPath.item].isLiked)
     }
 }
 
@@ -133,20 +158,6 @@ extension ImagesListViewController: UITableViewDataSource {
         return cell
     }
     
-    func updateTableViewAnimated() {
-        let oldCount = photos.count
-        let newCount = imageListService.photos.count
-        photos = imageListService.photos
-        if oldCount != newCount {
-            tableView.performBatchUpdates {
-                let indexPaths = (oldCount..<newCount).map { i in
-                    IndexPath(row: i, section: 0)
-                }
-                tableView.insertRows(at: indexPaths, with: .automatic)
-            } completion: { _ in }
-        }
-    }
-    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row == photos.count - 1 {
             UIBlockingProgressHUD.show()
@@ -162,11 +173,12 @@ extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.tableView.deselectRow(at: indexPath, animated: false)
         UIBlockingProgressHUD.show()
-
+        
         guard let url = URL(string: photos[indexPath.item].largeImageUrl) else { return }
         let viewController = SingleImageViewController()
         viewController.delegate = self
         viewController.downloadFullImage(url: url)
+        viewController.rescaleAndCenterImageInScrollView()
         viewController.modalPresentationStyle = .fullScreen
         present(viewController, animated: true, completion: nil)
     }
@@ -200,7 +212,7 @@ extension ImagesListViewController: ImagesListCellDelegate {
             case .success:
                 UIBlockingProgressHUD.dismiss()
                 self.photos = self.imageListService.photos
-                cell.setIsLiked(state: self.photos[indexPath.row].isLiked)
+                cell.setIsLiked(isLiked: self.photos[indexPath.row].isLiked)
             case .failure:
                 UIBlockingProgressHUD.dismiss()
                 
