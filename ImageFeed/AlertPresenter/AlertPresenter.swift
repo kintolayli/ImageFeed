@@ -8,14 +8,7 @@
 import UIKit
 
 
-struct AlertModel {
-    let title: String
-    let message: String
-    let buttonTitle: String
-    let buttonAction: ((UIAlertAction) -> Void)?
-}
-
-class AlertPresenter {
+final class AlertPresenter {
     private weak var viewController: UIViewController?
     
     init(viewController: UIViewController) {
@@ -28,6 +21,17 @@ class AlertPresenter {
         let alertController = UIAlertController(title: model.title, message: model.message, preferredStyle: .alert)
         let action = UIAlertAction(title: model.buttonTitle, style: .default, handler: model.buttonAction)
         alertController.addAction(action)
+        viewController.present(alertController, animated: true, completion: nil)
+    }
+    
+    func showWith2Buttons(model: AlertModelWith2Buttons) {
+        guard let viewController = viewController else { return }
+        
+        let alertController = UIAlertController(title: model.title, message: model.message, preferredStyle: .alert)
+        let action1 = UIAlertAction(title: model.buttonTitle1, style: .default, handler: model.buttonAction1)
+        let action2 = UIAlertAction(title: model.buttonTitle2, style: .default, handler: model.buttonAction2)
+        alertController.addAction(action1)
+        alertController.addAction(action2)
         viewController.present(alertController, animated: true, completion: nil)
     }
 }

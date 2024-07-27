@@ -9,6 +9,5 @@ import Foundation
 
 
 struct ProfileImage: Codable {
-    let small: String
-    let large: String
+    let small, medium, large: String
 }

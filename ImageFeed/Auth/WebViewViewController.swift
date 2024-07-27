@@ -8,12 +8,8 @@
 import UIKit
 import WebKit
 
-protocol WebViewViewControllerDelegate: AnyObject {
-    func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String)
-    func webViewViewControllerDidCancel(_ vc: WebViewViewController)
-}
 
-class WebViewViewController: UIViewController {
+final class WebViewViewController: UIViewController {
     private let webView: WKWebView = {
         let webView = WKWebView()
         return webView
@@ -41,7 +37,7 @@ class WebViewViewController: UIViewController {
                      return
                  }
                  self.updateProgress()
-        })
+             })
         
         webView.navigationDelegate = self
         
@@ -51,11 +47,11 @@ class WebViewViewController: UIViewController {
     }
     
     private func setupUI() {
-        self.view.addSubview(webView)
-        self.view.addSubview(progressView)
         
-        webView.translatesAutoresizingMaskIntoConstraints = false
-        progressView.translatesAutoresizingMaskIntoConstraints = false
+        [webView, progressView].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
         
         NSLayoutConstraint.activate([
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -113,7 +109,7 @@ extension WebViewViewController: WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         if let code = code(from: navigationAction.request.url) {
-
+            
             delegate?.webViewViewController(self, didAuthenticateWithCode: code)
             decisionHandler(.cancel)
         } else {

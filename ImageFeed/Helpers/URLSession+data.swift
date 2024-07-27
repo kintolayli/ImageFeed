@@ -7,11 +7,6 @@
 
 import UIKit
 
-enum NetworkError: Error {
-    case httpStatusCode(Int)
-    case urlRequestError(Error)
-    case urlSessionError
-}
 
 extension URLSession {
     func data(
@@ -29,14 +24,29 @@ extension URLSession {
                 if 200 ..< 300 ~= statusCode {
                     fulfillCompletionOnTheMainThread(.success(data))
                 } else {
-                    print("[URLSession.data]: NetworkError: HTTP status code: \(statusCode)")
+                    let logMessage =
+                    """
+                    [\(String(describing: self)).\(#function)]:
+                    NetworkError: HTTP status code: \(statusCode)
+                    """
+                    print(logMessage)
                     fulfillCompletionOnTheMainThread(.failure(NetworkError.httpStatusCode(statusCode)))
                 }
             } else if let error = error {
-                print("[URLSession.data]: NetworkError: \(error.localizedDescription)")
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                NetworkError: \(error.localizedDescription)
+                """
+                print(logMessage)
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlRequestError(error)))
             } else {
-                print("[URLSession.data]: NetworkError: URLSession error")
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                NetworkError: URLSession error
+                """
+                print(logMessage)
                 fulfillCompletionOnTheMainThread(.failure(NetworkError.urlSessionError))
             }
         })
@@ -59,7 +69,13 @@ extension URLSession {
                     let object = try decoder.decode(T.self, from: data)
                     completionHandler(.success(object))
                 } catch {
-                    print("[URLSession.objectTask]: Ошибка декодирования \(error.localizedDescription) - Данные: \(String(data: data, encoding: .utf8) ?? "")")
+                    let logMessage =
+                    """
+                    [\(String(describing: self)).\(#function)]:
+                    - Ошибка декодирования \(error.localizedDescription)
+                    - Данные: \(String(data: data, encoding: .utf8) ?? "")
+                    """
+                    print(logMessage)
                     
                     completionHandler(.failure(error))
                 }

@@ -8,7 +8,7 @@
 import UIKit
 import ProgressHUD
 
-class SplashViewController: UIViewController {
+final class SplashViewController: UIViewController {
     
     private let logoImageView: UIImageView = {
         let imageView = UIImageView()
@@ -21,7 +21,7 @@ class SplashViewController: UIViewController {
     private let tokenStorage = OAuth2TokenStorage()
     private var alertPresenter: AlertPresenter?
     
-    var delegate: AuthViewControllerDelegate?
+    weak var delegate: AuthViewControllerDelegate?
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -56,8 +56,8 @@ class SplashViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .ypBlack
-        view.addSubview(logoImageView)
         
+        view.addSubview(logoImageView)
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -95,12 +95,17 @@ extension SplashViewController: AuthViewControllerDelegate {
             UIBlockingProgressHUD.dismiss()
             
             guard let self = self else { return }
-
+            
             switch result {
             case .success(_):
                 switchToTabBarController()
             case .failure(let error):
-                print("[\(String(describing: self)).\(#function)]: \(AuthServiceError.invalidResponse) - Ошибка получения данных профиля, \(error.localizedDescription)")
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                \(AuthServiceError.invalidResponse) - Ошибка получения данных профиля, \(error.localizedDescription)
+                """
+                print(logMessage)
             }
         }
     }
@@ -118,7 +123,12 @@ extension SplashViewController: AuthViewControllerDelegate {
                 guard let token = tokenStorage.token else { return }
                 fetchProfile(token: token)
             case .failure(let error):
-                print("[\(String(describing: self)).\(#function)]: \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)")
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)
+                """
+                print(logMessage)
                 
                 let alertModel = AlertModel(
                     title: "Что-то пошло не так(",
@@ -126,7 +136,7 @@ extension SplashViewController: AuthViewControllerDelegate {
                     buttonTitle: "ОК",
                     buttonAction: nil
                 )
-    
+                
                 alertPresenter?.show(model: alertModel)
             }
         }

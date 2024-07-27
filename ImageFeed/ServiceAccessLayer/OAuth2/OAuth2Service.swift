@@ -7,26 +7,19 @@
 
 import UIKit
 
-enum AuthServiceError: Error {
-    case invalidRequest
-    case invalidResponse
-    case invalidBaseUrl
-    case invalidUrl
-    case invalidCode
-}
 
 final class OAuth2Service {
-    static let shared = OAuth2Service()
-    let tokenStorage = OAuth2TokenStorage()
     
+    static let shared = OAuth2Service()
     private let urlSession = URLSession.shared
     
+    private let tokenStorage = OAuth2TokenStorage()
     private var task: URLSessionTask?
     private var lastCode: String?
     
     private init () {}
     
-    func makeOAuthTokenRequest(code: String) throws ->  URLRequest? {
+    private func makeOAuthTokenRequest(code: String) throws ->  URLRequest? {
         guard var urlComponents = URLComponents(string: Constants.unsplashTokenURLString) else {
             throw AuthServiceError.invalidBaseUrl
         }
@@ -70,8 +63,13 @@ final class OAuth2Service {
                 self?.tokenStorage.token = response.accessToken
                 completion(.success(response.accessToken))
             case .failure(let error):
-                print("[\(String(describing: self)).\(#function)]: \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)")
-                completion(.failure(AuthServiceError.invalidResponse))
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                \(AuthServiceError.invalidResponse) - Ошибка получения OAuth токена, \(error.localizedDescription)
+                """
+                print(logMessage)
+                completion(.failure(error))
             }
             
             self?.task = nil

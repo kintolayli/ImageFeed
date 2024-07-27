@@ -12,12 +12,17 @@ final class ProfileImageService {
     static let shared = ProfileImageService()
     static let didChangeNotification = Notification.Name(rawValue: "ProfileImageProviderDidChange")
     
-    private init() {}
     private(set) var profileImageURL: String?
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
     
-    func makeProfileImageRequest(username: String) throws -> URLRequest? {
+    private init() {}
+    
+    func clearProfileImage() {
+        profileImageURL = nil
+    }
+    
+    private func makeProfileImageRequest(username: String) throws -> URLRequest? {
         guard let baseUrl = Constants.defaultBaseUrl else {
             throw ProfileImageServiceError.invalidBaseUrl
         }
@@ -44,17 +49,22 @@ final class ProfileImageService {
             return
         }
         
-        let task = urlSession.objectTask(for: request) { (result: Result<UserResult, Error>) in
+        let task = urlSession.objectTask(for: request) { (result: Result<ProfileImageResult, Error>) in
             switch result {
             case .success(let response):
-                    let profileImage = response.profileImage.large
-                    self.profileImageURL = profileImage
-                    completion(.success(profileImage))
-                    NotificationCenter.default.post(name: ProfileImageService.didChangeNotification,
-                                                    object: self,
-                                                    userInfo: ["URL": profileImage])
+                let profileImage = response.profileImage.large
+                self.profileImageURL = profileImage
+                completion(.success(profileImage))
+                NotificationCenter.default.post(name: ProfileImageService.didChangeNotification,
+                                                object: self,
+                                                userInfo: ["URL": profileImage])
             case .failure(let error):
-                print("[\(String(describing: self)).\(#function)]: \(ProfileImageServiceError.fetchProfileImageError) - Ошибка получения URL изображения профиля, \(error.localizedDescription)")
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                \(ProfileImageServiceError.fetchProfileImageError) - Ошибка получения URL изображения профиля, \(error.localizedDescription)
+                """
+                print(logMessage)
                 completion(.failure(error))
             }
         }

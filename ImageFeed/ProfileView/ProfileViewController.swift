@@ -9,7 +9,7 @@ import UIKit
 import Kingfisher
 import WebKit
 
-class ProfileViewController: UIViewController {
+final class ProfileViewController: UIViewController {
     
     private let profileService = ProfileService.shared
     private var profileImageServiceObserver: NSObjectProtocol?
@@ -82,20 +82,25 @@ class ProfileViewController: UIViewController {
         guard let profileImageURL = ProfileImageService.shared.profileImageURL,
               let url = URL(string: profileImageURL)
         else { return }
-
+        
         let processor = RoundCornerImageProcessor(cornerRadius: 20)
         profileImage.kf.indicatorType = .activity
         profileImage.kf.setImage(with: url,
                                  placeholder: UIImage(named: "userpick_stub"),
                                  options: [.processor(processor)]) { result in
             switch result {
-            case .success(let value):
-                print(value.image)
+            case .success:
+                // TODO: - Нотификация после обновления изображения профиля
+                break
             case .failure(let error):
-                print(error.localizedDescription)
+                let logMessage =
+                """
+                [\(String(describing: self)).\(#function)]:
+                \(ProfileImageServiceError.fetchProfileImageError) - Ошибка обновления изображения профиля, \(error.localizedDescription)
+                """
+                print(logMessage)
             }
         }
-        
     }
     
     private func updateProfileDetails(profile: Profile?) {
@@ -110,17 +115,10 @@ class ProfileViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = .ypBlack
         
-        profileImage.translatesAutoresizingMaskIntoConstraints = false
-        realNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        usernameLabel.translatesAutoresizingMaskIntoConstraints = false
-        textLabel.translatesAutoresizingMaskIntoConstraints = false
-        logoutButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        view.addSubview(profileImage)
-        view.addSubview(realNameLabel)
-        view.addSubview(usernameLabel)
-        view.addSubview(textLabel)
-        view.addSubview(logoutButton)
+        [profileImage, realNameLabel, usernameLabel, textLabel, logoutButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
         
         NSLayoutConstraint.activate([
             profileImage.widthAnchor.constraint(equalToConstant: 70),
@@ -144,32 +142,23 @@ class ProfileViewController: UIViewController {
         ])
     }
     
-    func clearCookies() {
-        let cookieStorage = HTTPCookieStorage.shared
-        if let cookies = cookieStorage.cookies {
-            for cookie in cookies {
-                cookieStorage.deleteCookie(cookie)
-            }
-        }
-    }
-    
-    func clearWebsiteData() {
-        let dataStore = WKWebsiteDataStore.default()
-        let dataTypes = WKWebsiteDataStore.allWebsiteDataTypes()
-        let date = Date(timeIntervalSince1970: 0)
-        
-        dataStore.removeData(ofTypes: dataTypes, modifiedSince: date) {
-            print("Все данные WKWebsiteDataStore были очищены")
-        }
-    }
-    
     @objc private func logoutButtonDidTap(_ sender: Any) {
-        OAuth2TokenStorage.deleteToken()
-        clearCookies()
-        clearWebsiteData()
+        let presenter = AlertPresenter(viewController: self)
         
-        let viewController = SplashViewController()
-        viewController.modalPresentationStyle = .fullScreen
-        present(viewController, animated: true, completion: nil)
+        let alertModel = AlertModelWith2Buttons(
+            title: "Пока, пока!",
+            message: "Уверены что хотите выйти?",
+            buttonTitle1: "Да",
+            buttonAction1: { [weak self] _ in
+                ProfileLogoutService.shared.logout()
+                let viewController = SplashViewController()
+                viewController.modalPresentationStyle = .fullScreen
+                self?.present(viewController, animated: true, completion: nil)
+            },
+            buttonTitle2: "Нет",
+            buttonAction2: nil
+        )
+        
+        presenter.showWith2Buttons(model: alertModel)
     }
 }
