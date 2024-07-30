@@ -8,7 +8,7 @@
 import Foundation
 
 
-final class ImageListService {
+final public class ImageListService {
     
     static let shared = ImageListService()
     static let didChangeNotification = Notification.Name(rawValue: "ImagesListServiceDidChange")
@@ -121,7 +121,7 @@ private extension ImageListService {
         case popular = "popular"
     }
     
-    func makeImageListRequest(page: Int, perPage: Int = 10, orderBy: OrderBy = .latest) throws -> URLRequest? {
+    func makeImageListRequest(page: Int, perPage: Int = 5, orderBy: OrderBy = .latest) throws -> URLRequest? {
         
         guard var urlComponents = URLComponents(string: Constants.defaultBaseUrlString) else {
             throw ImageListServiceError.invalidBaseUrl
