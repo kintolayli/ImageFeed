@@ -23,7 +23,7 @@ final class AuthHelper: AuthHelperProtocol {
     }
     
     func authRequest() -> URLRequest? {
-        guard let url = authUrl() else { return nil }
+        let url = authUrl()
         
         return URLRequest(url: url)
     }
@@ -40,9 +40,9 @@ final class AuthHelper: AuthHelperProtocol {
         }
     }
     
-    private func authUrl() -> URL? {
+    func authUrl() -> URL {
         guard var urlComponents = URLComponents(string: configuration.authURLString) else {
-            return nil
+            fatalError("[\(String(describing: AuthHelper.self)).\(#function)]: Error when initialize URLComponents")
         }
         
         urlComponents.queryItems = [
@@ -52,6 +52,9 @@ final class AuthHelper: AuthHelperProtocol {
             URLQueryItem(name: "scope", value: configuration.accessScope),
         ]
         
-        return urlComponents.url
+        guard let url = urlComponents.url else {
+            fatalError("[\(String(describing: AuthHelper.self)).\(#function)]: Error when initialize URLComponents.url")
+        }
+        return url
     }
 }
