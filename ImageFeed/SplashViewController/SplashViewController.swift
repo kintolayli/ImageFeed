@@ -100,12 +100,23 @@ extension SplashViewController: AuthViewControllerDelegate {
             case .success(_):
                 switchToTabBarController()
             case .failure(let error):
+                let userMessage = "Ошибка получения данных профиля"
                 let logMessage =
                 """
                 [\(String(describing: self)).\(#function)]:
-                \(AuthServiceError.invalidResponse) - Ошибка получения данных профиля, \(error.localizedDescription)
+                \(AuthServiceError.invalidResponse) - \(userMessage), \(error.localizedDescription)
                 """
                 print(logMessage)
+                
+                let alertPresenter = AlertPresenter(viewController: self)
+                let alertModel = AlertModel(title: userMessage, message: error.localizedDescription, buttonTitle: "ОК", buttonAction: nil)
+                alertPresenter.show(model: alertModel)
+                
+                ProfileLogoutService.shared.logout()
+                let viewController = AuthViewController()
+                viewController.delegate = self
+                viewController.modalPresentationStyle = .fullScreen
+                present(viewController, animated: true, completion: nil)
             }
         }
     }

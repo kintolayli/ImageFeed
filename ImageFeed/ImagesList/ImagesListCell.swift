@@ -8,7 +8,7 @@
 import UIKit
 
 
-final class ImagesListCell: UITableViewCell {
+final public class ImagesListCell: UITableViewCell {
     
     static let reuseIdentifier = "ImagesListCell"
     weak var delegate: ImagesListCellDelegate?
@@ -24,6 +24,7 @@ final class ImagesListCell: UITableViewCell {
     private let likeButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "like_button_off"), for: .normal)
+        button.accessibilityIdentifier = "likeButton"
         button.layer.shadowColor = UIColor.ypBlack.cgColor
         button.layer.shadowOpacity = 0.2
         button.layer.shadowOffset = CGSize(width: 0, height:1)
@@ -65,13 +66,13 @@ final class ImagesListCell: UITableViewCell {
         super.init(coder: aDecoder)
     }
     
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         super.layoutSubviews()
         
         contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 4, left: 0, bottom: 4, right: 0))
     }
     
-    override func prepareForReuse() {
+    public override func prepareForReuse() {
         super.prepareForReuse( )
         
         mainImage.kf.cancelDownloadTask()

@@ -41,6 +41,7 @@ final class SingleImageViewController: UIViewController {
     
     private let backwardButton: UIButton = {
         let button = UIButton()
+        button.accessibilityIdentifier = "backwardButton"
         button.setImage(UIImage(named: "Backward"), for: .normal)
         return button
     }()
