@@ -28,6 +28,7 @@ final class ImagesListPresenter: ImagesListPresenterProtocol {
     
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
         cell.backgroundColor = .clear
+        cell.selectionStyle = .none
         
         guard let thumbImageURL = view?.photos[indexPath.item].thumbImageURL else { return }
         guard let url = URL(string: thumbImageURL) else { return }
