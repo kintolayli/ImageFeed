@@ -24,6 +24,7 @@ final class AuthViewController: UIViewController {
     
     private let loginButton: UIButton = {
         let button = UIButton(type: .system)
+        button.accessibilityIdentifier = "Authenticate"
         button.backgroundColor = .ypWhite
         button.titleLabel?.font = UIFont.systemFont(ofSize: 17.0, weight: .bold)
         button.setTitle("Войти", for: .normal)
@@ -37,7 +38,7 @@ final class AuthViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loginButton.addTarget(self, action: #selector(didTapLogoutButton), for: .touchUpInside)
+        loginButton.addTarget(self, action: #selector(didTapLoginButton), for: .touchUpInside)
         setupUI()
         configureBackButton()
     }
@@ -64,11 +65,15 @@ final class AuthViewController: UIViewController {
         ])
     }
     
-    @objc private func didTapLogoutButton() {
-        let viewController = WebViewViewController()
-        viewController.delegate = self
-        viewController.modalPresentationStyle = .fullScreen
-        present(viewController, animated: true, completion: nil)
+    @objc private func didTapLoginButton() {
+        let webViewViewController = WebViewViewController()
+        let authHelper = AuthHelper()
+        let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+        webViewViewController.presenter = webViewPresenter
+        webViewPresenter.view = webViewViewController
+        webViewViewController.delegate = self
+        webViewViewController.modalPresentationStyle = .fullScreen
+        present(webViewViewController, animated: true, completion: nil)
     }
     
     private func configureBackButton() {
